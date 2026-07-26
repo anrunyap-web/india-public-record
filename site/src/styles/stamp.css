@@ -1,0 +1,245 @@
+/*
+ * The provenance stamp.
+ *
+ * Every value on the site is followed by one of these. Activating it expands a panel
+ * showing the locator, the assertion type, the retrieval date, the document hash, and
+ * a link to the archived copy. Nothing renders without one.
+ *
+ * DEVIATION, flagged in DECISIONS.md #17: built on <details>/<summary>, not a <button>
+ * with aria-expanded as the spec's wording says. A summary is exposed to assistive
+ * technology as a button and carries expanded state natively, so nothing is lost — and
+ * it needs no JavaScript. In an archive whose whole premise is that any fact can be
+ * checked, provenance that stops working when a script fails to load is a real defect,
+ * and the spec elsewhere insists on the same thing: charts must work with JS disabled.
+ * If the literal <button> is wanted, it is a small change plus about fifteen lines of JS.
+ *
+ * Only the expand is animated, at 120ms. Collapse is instant, which is what falls out
+ * of <details> naturally and is also exactly what the spec permits.
+ */
+
+.stamp {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--t-small);
+  font-weight: 400;
+  line-height: 1.4;
+  vertical-align: baseline;
+}
+
+/* --- the chip ----------------------------------------------------------- */
+
+/*
+ * The <summary> keeps its default display. Overriding it — inline-flex was the first
+ * attempt here — strips the native disclosure semantics, and the element drops out of
+ * the accessibility tree as a plain generic with no expanded state. Caught by reading
+ * the tree rather than the screenshot, which looked perfect. Layout therefore happens
+ * on an inner span, never on the summary itself.
+ */
+.stamp__summary {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.stamp__summary::-webkit-details-marker {
+  display: none;
+}
+.stamp__summary::marker {
+  content: "";
+}
+
+.stamp__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  padding: 0.1em 0.45em;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.stamp__summary:hover .stamp__chip {
+  border-color: var(--ink-soft);
+}
+
+/* The ring hugs the chip, not the full-width summary box. */
+.stamp__summary:focus-visible {
+  outline: none;
+}
+.stamp__summary:focus-visible .stamp__chip {
+  outline: 2px solid var(--stamp);
+  outline-offset: 2px;
+}
+
+/*
+ * Status is carried by a word, never by colour alone. The colour is a second,
+ * redundant signal — remove it and the stamp still says what it means.
+ */
+.stamp__status {
+  font-weight: 500;
+  text-transform: none;
+}
+
+.stamp[data-status="verified"] .stamp__status {
+  color: var(--stamp);
+}
+.stamp[data-status="unverified"] .stamp__status,
+.stamp[data-status="superseded"] .stamp__status,
+.stamp[data-status="draft"] .stamp__status,
+.stamp[data-status="withdrawn"] .stamp__status {
+  color: var(--pending);
+}
+.stamp[data-status="disputed"] .stamp__status {
+  color: var(--flagged);
+}
+
+/* A left rule in the status colour, so the state survives at 400% zoom and in
+   monochrome, where a small coloured word is easy to miss. */
+.stamp[data-status="verified"] .stamp__chip {
+  border-left: 3px solid var(--stamp);
+}
+.stamp[data-status="unverified"] .stamp__chip,
+.stamp[data-status="superseded"] .stamp__chip,
+.stamp[data-status="draft"] .stamp__chip,
+.stamp[data-status="withdrawn"] .stamp__chip {
+  border-left: 3px solid var(--pending);
+}
+.stamp[data-status="disputed"] .stamp__chip {
+  border-left: 3px solid var(--flagged);
+}
+
+.stamp__sep {
+  color: var(--rule);
+}
+
+/* --- the panel ---------------------------------------------------------- */
+
+/*
+ * Hide the closed panel explicitly rather than trusting the user agent.
+ *
+ * Browsers hide closed <details> content through an internal mechanism — Chromium now
+ * uses content-visibility on ::details-content — and overriding `display` on the
+ * <details> element, which this component does to sit inline after a value, interacts
+ * with that mechanism differently across engines. Measured here while closed: the panel
+ * was unpainted but still held a 1995px layout box crushed into the chip's 156px column.
+ * Harmless in this browser, not something to leave to chance in another.
+ */
+.stamp:not([open]) .stamp__panel {
+  display: none;
+}
+
+.stamp__panel {
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--paper-sunk);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  max-width: 34rem;
+  white-space: normal;
+}
+
+.stamp[open] .stamp__panel {
+  animation: stamp-expand var(--expand-ms) ease-out;
+}
+
+@keyframes stamp-expand {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp[open] .stamp__panel {
+    animation: none;
+  }
+}
+
+.stamp__fields {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.85rem;
+  margin: 0;
+}
+
+.stamp__fields dt {
+  color: var(--ink-soft);
+  font-family: var(--font-sans);
+  font-size: var(--t-small);
+}
+
+.stamp__fields dd {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.stamp__link {
+  display: inline-block;
+  margin-top: 0.7rem;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-small);
+}
+
+/* The one icon in the entire design. */
+.stamp__link .glyph {
+  font-family: var(--font-mono);
+  text-decoration: none;
+  display: inline-block;
+  margin-left: 0.2em;
+}
+
+/* --- inside a table ----------------------------------------------------- */
+
+/*
+ * The panel expands within its cell, so the row grows and the table's structure is
+ * untouched — no colspan row injected, no display property overridden, nothing that
+ * would break the relationship between a cell and its <th scope>.
+ */
+.claims {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--t-body);
+}
+
+.claims caption {
+  text-align: left;
+  color: var(--ink-soft);
+  font-size: var(--t-small);
+  padding-bottom: 0.6rem;
+}
+
+.claims th,
+.claims td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.6rem 0.8rem 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.claims th {
+  font-weight: 500;
+  color: var(--ink-soft);
+  font-size: var(--t-small);
+}
+
+.claims tbody tr:nth-child(even) {
+  background: var(--paper-sunk);
+}
+
+.claims .num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/*
+ * Wide tables scroll inside their own container. WCAG exempts data tables from the
+ * no-horizontal-scroll requirement at 400% zoom, but the page body must never scroll,
+ * so the overflow is confined here.
+ */
+.table-scroll {
+  overflow-x: auto;
+}

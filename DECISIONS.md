@@ -196,6 +196,44 @@ Their relative order is correct, which is what the id is for. They were not rege
 because rule 4 forbids deleting a claim file, and the ids are the filenames. Recorded
 here so that anyone decoding a ULID and finding the mismatch knows why.
 
+## 17. The stamp is a `<details>`, not a `<button aria-expanded>`
+
+§9 says the provenance stamp is "a `<button>` with `aria-expanded`". It is built on
+`<details>`/`<summary>` instead.
+
+A `<summary>` is exposed to assistive technology as a button and carries expanded state
+natively, so nothing is lost in the accessibility tree — and it needs no JavaScript. In
+an archive whose entire premise is that any fact can be checked, provenance that stops
+working when a script fails to load is a real defect. The spec insists on the same thing
+elsewhere: charts are server-rendered SVG specifically so they "work with JS disabled".
+
+`<details>` also animates only on open, never on close, which is exactly what §7 permits:
+"no animation beyond a 120ms expand".
+
+If the literal `<button>` is wanted it is a small change plus roughly fifteen lines of
+JavaScript, at the cost of the no-JS guarantee.
+
+### Two defects this turned up, both invisible in a screenshot
+
+**`display` on `<summary>` destroys its semantics.** The chip was first laid out by
+putting `display: inline-flex` directly on the `<summary>`. That takes the element off
+its default `list-item` display, and with it the native disclosure semantics — the
+button role and expanded state simply stop being exposed. The page looked perfect.
+Layout now happens on an inner `<span>`; the `<summary>` keeps its default display and
+is styled only through it.
+
+**The closed panel kept a layout box.** With `display: inline-block` on the `<details>`
+— needed so the stamp sits inline after a value — the closed panel was unpainted but
+still held a 1995px-tall layout box crushed into the chip's 156px column. Browsers hide
+closed `<details>` content through an internal mechanism (Chromium now uses
+`content-visibility` on `::details-content`) that interacts with an overridden `display`
+differently across engines. Now hidden explicitly with
+`.stamp:not([open]) .stamp__panel { display: none }` rather than left to the user agent.
+
+Measured after the fixes, every foreground/background pair in both themes clears the
+4.5:1 target, worst case 5.15:1 (`--pending` on a dark striped row). The page body does
+not scroll sideways; only the table does, inside its own container.
+
 ---
 
 ## Two schemas written from scratch

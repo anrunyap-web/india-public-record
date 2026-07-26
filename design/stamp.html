@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Provenance stamp — component gallery</title>
+    <!-- The ?v= is cache-busting for this gallery only; the preview pane caches file:// CSS hard. Bump it after editing either file. -->
+    <link rel="stylesheet" href="../site/src/styles/tokens.css?v=2" />
+    <link rel="stylesheet" href="../site/src/styles/stamp.css?v=2" />
+    <style>
+      /* Gallery scaffolding only. None of this ships. */
+      main { max-width: 52rem; margin: 0 auto; padding: 2rem 1.25rem 6rem; }
+      h1 { font-family: var(--font-title); font-size: var(--t-title); font-weight: 400; margin: 0 0 0.25rem; }
+      h2 { font-size: var(--t-lead); font-weight: 500; margin: 2.75rem 0 0.5rem; }
+      .lede { color: var(--ink-soft); max-width: 40rem; margin: 0 0 2rem; }
+      .note { color: var(--ink-soft); font-size: var(--t-small); max-width: 40rem; margin: 0.5rem 0 1rem; }
+      .swatches { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 0; list-style: none; margin: 1rem 0; }
+      .swatches li { font-family: var(--font-mono); font-size: var(--t-small); }
+      .swatches i { display: block; width: 6.5rem; height: 2.5rem; border: 1px solid var(--rule); }
+      .bar { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 2rem; }
+      .bar button { font: inherit; font-size: var(--t-small); padding: 0.35rem 0.7rem;
+        background: var(--paper); color: var(--ink); border: 1px solid var(--rule); border-radius: 2px; cursor: pointer; }
+      .row-demo { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+      .row-demo .value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+      <h1>Provenance stamp</h1>
+      <p class="lede">
+        Build order step 3, in isolation. Every value on the site is followed by one of
+        these; nothing renders without one. Data below is the real seed set — CAG Report
+        No. 4 of 2026, verified 26 July 2026.
+      </p>
+
+      <div class="bar">
+        <button type="button" id="theme">Toggle dark</button>
+        <span class="note" style="margin:0">Also follows your system setting on load.</span>
+      </div>
+
+      <h2>In a table, which is where it lives</h2>
+      <p class="note">
+        Expanding grows the row within its own cell. No injected colspan row, no
+        overridden display property — the relationship between each cell and its
+        <code>&lt;th scope&gt;</code> is untouched.
+      </p>
+
+      <div class="table-scroll">
+        <table class="claims">
+          <caption>
+            Expenditure reported — Mahatma Gandhi National Rural Employment Guarantee
+            Scheme, Madhya Pradesh. Recorded by authority.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Financial year</th>
+              <th scope="col">Expenditure reported</th>
+              <th scope="col">Provenance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">2019-20</th>
+              <td class="num">₹5186.15 crore</td>
+              <td>
+                <details class="stamp" data-status="verified">
+                  <summary class="stamp__summary"><span class="stamp__chip">
+                    <span>cag</span>
+                    <span class="stamp__sep" aria-hidden="true">·</span>
+                    <span>p57</span>
+                    <span class="stamp__status">verified</span>
+                  </span></summary>
+                  <div class="stamp__panel">
+                    <dl class="stamp__fields">
+                      <dt>Source</dt>
+                      <dd>src:cag:mp-report-4-2026-mgnrega</dd>
+                      <dt>Locator</dt>
+                      <dd>Chart 4.1 “Funds released and expenditure incurred”, Total Expenditure series, financial year 2019-20 (printed page 31)</dd>
+                      <dt>Asserted by</dt>
+                      <dd>Recorded by authority</dd>
+                      <dt>Retrieved</dt>
+                      <dd><time datetime="2026-07-26">26 July 2026</time></dd>
+                      <dt>Document hash</dt>
+                      <dd>76470ece9bd4722d</dd>
+                    </dl>
+                    <a class="stamp__link" href="https://web.archive.org/web/20260726230542/https://cag.gov.in/webroot/uploads/download_audit_report/2026/MP-Report-No.-04-of-2026---MGNREGA--English-06a61c636798ce0.32200448.pdf">Archived document<span class="glyph" aria-hidden="true">↗</span></a>
+                  </div>
+                </details>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">2020-21</th>
+              <td class="num">₹9513.68 crore</td>
+              <td>
+                <details class="stamp" data-status="verified">
+                  <summary class="stamp__summary"><span class="stamp__chip">
+                    <span>cag</span>
+                    <span class="stamp__sep" aria-hidden="true">·</span>
+                    <span>p57</span>
+                    <span class="stamp__status">verified</span>
+                  </span></summary>
+                  <div class="stamp__panel">
+                    <dl class="stamp__fields">
+                      <dt>Source</dt>
+                      <dd>src:cag:mp-report-4-2026-mgnrega</dd>
+                      <dt>Locator</dt>
+                      <dd>Chart 4.1, Total Expenditure series, financial year 2020-21 (printed page 31)</dd>
+                      <dt>Asserted by</dt>
+                      <dd>Recorded by authority</dd>
+                      <dt>Retrieved</dt>
+                      <dd><time datetime="2026-07-26">26 July 2026</time></dd>
+                      <dt>Document hash</dt>
+                      <dd>76470ece9bd4722d</dd>
+                    </dl>
+                    <a class="stamp__link" href="https://web.archive.org/web/20260726230542/https://cag.gov.in/webroot/uploads/download_audit_report/2026/MP-Report-No.-04-of-2026---MGNREGA--English-06a61c636798ce0.32200448.pdf">Archived document<span class="glyph" aria-hidden="true">↗</span></a>
+                  </div>
+                </details>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">2021-22</th>
+              <td class="num">₹8374.49 crore</td>
+              <td>
+                <details class="stamp" data-status="verified">
+                  <summary class="stamp__summary"><span class="stamp__chip">
+                    <span>cag</span>
+                    <span class="stamp__sep" aria-hidden="true">·</span>
+                    <span>p57</span>
+                    <span class="stamp__status">verified</span>
+                  </span></summary>
+                  <div class="stamp__panel">
+                    <dl class="stamp__fields">
+                      <dt>Source</dt>
+                      <dd>src:cag:mp-report-4-2026-mgnrega</dd>
+                      <dt>Locator</dt>
+                      <dd>Chart 4.1, Total Expenditure series, financial year 2021-22 (printed page 31)</dd>
+                      <dt>Asserted by</dt>
+                      <dd>Recorded by authority</dd>
+                      <dt>Retrieved</dt>
+                      <dd><time datetime="2026-07-26">26 July 2026</time></dd>
+                      <dt>Document hash</dt>
+                      <dd>76470ece9bd4722d</dd>
+                    </dl>
+                    <a class="stamp__link" href="https://web.archive.org/web/20260726230542/https://cag.gov.in/webroot/uploads/download_audit_report/2026/MP-Report-No.-04-of-2026---MGNREGA--English-06a61c636798ce0.32200448.pdf">Archived document<span class="glyph" aria-hidden="true">↗</span></a>
+                  </div>
+                </details>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Every status</h2>
+      <p class="note">
+        Only <em>verified</em> ever reaches the public site; the rest appear on the
+        history route. Status is a word first and a colour second — greyscale the page
+        and nothing is lost. The colour also runs down the left edge as a rule, so the
+        state survives at 400% zoom where a small coloured word is easy to miss.
+      </p>
+
+      <div class="row-demo">
+        <details class="stamp" data-status="verified">
+          <summary class="stamp__summary"><span class="stamp__chip"><span>cag</span><span class="stamp__sep" aria-hidden="true">·</span><span>p57</span><span class="stamp__status">verified</span></span></summary>
+          <div class="stamp__panel"><dl class="stamp__fields"><dt>Checked by</dt><dd>handle:anrun, 26 July 2026</dd></dl></div>
+        </details>
+        <details class="stamp" data-status="unverified">
+          <summary class="stamp__summary"><span class="stamp__chip"><span>cag</span><span class="stamp__sep" aria-hidden="true">·</span><span>p60</span><span class="stamp__status">unverified</span></span></summary>
+          <div class="stamp__panel"><dl class="stamp__fields"><dt>Extraction</dt><dd>model_assisted — no person has checked this against the page</dd></dl></div>
+        </details>
+        <details class="stamp" data-status="disputed">
+          <summary class="stamp__summary"><span class="stamp__chip"><span>cag</span><span class="stamp__sep" aria-hidden="true">·</span><span>p61</span><span class="stamp__status">disputed</span></span></summary>
+          <div class="stamp__panel"><dl class="stamp__fields"><dt>Raised</dt><dd>Two extraction passes disagreed; neither was picked</dd></dl></div>
+        </details>
+        <details class="stamp" data-status="superseded">
+          <summary class="stamp__summary"><span class="stamp__chip"><span>cag</span><span class="stamp__sep" aria-hidden="true">·</span><span>p61</span><span class="stamp__status">superseded</span></span></summary>
+          <div class="stamp__panel"><dl class="stamp__fields"><dt>Replaced by</dt><dd>clm:01KYGD2M39Y4MJET44SGCCWFDG</dd></dl></div>
+        </details>
+      </div>
+
+      <h2>Tokens</h2>
+      <ul class="swatches">
+        <li><i style="background: var(--paper)"></i>--paper</li>
+        <li><i style="background: var(--paper-sunk)"></i>--paper-sunk</li>
+        <li><i style="background: var(--ink)"></i>--ink</li>
+        <li><i style="background: var(--ink-soft)"></i>--ink-soft</li>
+        <li><i style="background: var(--rule)"></i>--rule</li>
+        <li><i style="background: var(--stamp)"></i>--stamp</li>
+        <li><i style="background: var(--pending)"></i>--pending</li>
+        <li><i style="background: var(--flagged)"></i>--flagged</li>
+      </ul>
+      <p class="note">
+        Eight, not the nine the spec's comment claimed. No link colour was added: links
+        are ink with an underline, and a dedicated colour would collide with
+        <code>--stamp</code>, which means “this was checked”.
+      </p>
+
+      <h2>How to test it</h2>
+      <p class="note">
+        Tab to a chip and press Enter or Space — it is a real disclosure control, with
+        expanded state exposed to assistive technology, and no JavaScript involved.
+        Disable JavaScript entirely and every stamp still opens. Set
+        <code>prefers-reduced-motion: reduce</code> and the 120ms expand disappears.
+        Zoom to 400% and the page body does not scroll sideways; only the table does,
+        inside its own container.
+      </p>
+    </main>
+
+    <script>
+      // Gallery only — the theme toggle is not part of the component.
+      const root = document.documentElement;
+      const btn = document.getElementById("theme");
+      btn.addEventListener("click", () => {
+        const dark =
+          root.dataset.theme === "dark" ||
+          (!root.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+        root.dataset.theme = dark ? "light" : "dark";
+        btn.textContent = dark ? "Toggle dark" : "Toggle light";
+      });
+    </script>
+  </body>
+</html>

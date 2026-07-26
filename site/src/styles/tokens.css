@@ -1,0 +1,122 @@
+/*
+ * Design tokens.
+ *
+ * Eight colour values, no green, no red. The palette encodes epistemic status —
+ * whether a fact has been checked — never whether it is favourable. --flagged is
+ * purple precisely because purple carries no moral reading.
+ *
+ * --pending is #635C54, not the #7A7268 originally specified: that value measured
+ * 4.17:1 against --paper-sunk, below the 4.5:1 the accessibility target sets, and
+ * --paper-sunk is exactly where unverified and superseded rows land. See DECISIONS.md #4.
+ *
+ * Measured contrast, light theme:
+ *              on --paper   on --paper-sunk
+ *   --ink         17.0:1        16.4:1
+ *   --ink-soft     7.9:1         7.3:1
+ *   --stamp       11.0:1        10.1:1
+ *   --pending      6.3:1         5.8:1
+ *   --flagged      6.8:1         6.2:1
+ */
+
+:root {
+  --paper: #fbfaf7;
+  --paper-sunk: #f2f0ea;
+  --ink: #16181c;
+  --ink-soft: #4a4f57;
+  --rule: #d8d5cc;
+  --stamp: #1f3a5f;
+  --pending: #635c54;
+  --flagged: #6b4a8a;
+
+  /* 14 / 16 / 20 / 28 / 40. Weights 400 and 500 only. */
+  --t-small: 0.875rem;
+  --t-body: 1rem;
+  --t-lead: 1.25rem;
+  --t-head: 1.75rem;
+  --t-title: 2.5rem;
+
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans Devanagari", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --font-title: "Newsreader", Georgia, serif;
+
+  --expand-ms: 120ms;
+}
+
+/*
+ * Dark theme inverts paper and ink; the three status colours lighten one step.
+ * Re-measured rather than eyeballed — on --paper the contrasts are --ink 17.0:1,
+ * --ink-soft 6.8:1, --stamp 6.2:1, --pending 5.7:1, --flagged 7.1:1.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #16181c;
+    --paper-sunk: #1e2127;
+    --ink: #fbfaf7;
+    --ink-soft: #9aa0a8;
+    --rule: #343841;
+    --stamp: #6e9bd1;
+    --pending: #9a9086;
+    --flagged: #b394d6;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #16181c;
+  --paper-sunk: #1e2127;
+  --ink: #fbfaf7;
+  --ink-soft: #9aa0a8;
+  --rule: #343841;
+  --stamp: #6e9bd1;
+  --pending: #9a9086;
+  --flagged: #b394d6;
+}
+
+:root[data-theme="light"] {
+  --paper: #fbfaf7;
+  --paper-sunk: #f2f0ea;
+  --ink: #16181c;
+  --ink-soft: #4a4f57;
+  --rule: #d8d5cc;
+  --stamp: #1f3a5f;
+  --pending: #635c54;
+  --flagged: #6b4a8a;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Skip link to main, per the accessibility target. */
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--stamp);
+  z-index: 10;
+}
+.skip:focus {
+  left: 0;
+}
+
+:where(a) {
+  color: var(--ink);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+:where(a):focus-visible,
+:where(button):focus-visible,
+:where(summary):focus-visible {
+  outline: 2px solid var(--stamp);
+  outline-offset: 2px;
+}
