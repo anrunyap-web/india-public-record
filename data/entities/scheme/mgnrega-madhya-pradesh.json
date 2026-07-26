@@ -1,0 +1,27 @@
+{
+  "id": "ent:scheme:mgnrega-madhya-pradesh",
+  "type": "scheme",
+  "canonical_name": "Mahatma Gandhi National Rural Employment Guarantee Scheme, Madhya Pradesh",
+  "name_variants": [
+    "MGNREGS Madhya Pradesh",
+    "MGNREGA in Madhya Pradesh",
+    "Mahatma Gandhi NREGS, Madhya Pradesh"
+  ],
+  "names_local": {
+    "hi": "महात्मा गांधी राष्ट्रीय ग्रामीण रोजगार गारंटी योजना, मध्य प्रदेश"
+  },
+  "disambiguation": "Implementation in Madhya Pradesh. Every figure held here is State-level, never national.",
+  "inclusion_reason": "government_scheme",
+  "coverage": {
+    "from": "2019-04-01",
+    "to": "2024-03-31",
+    "note": "Holds only what one document records: the Comptroller and Auditor General's performance audit of MGNREGA in Madhya Pradesh for 2019-24, which reports State-level expenditure by financial year. Nothing is held about the scheme in any other State, about any period outside 2019-24, or about individual works, workers or households. An empty period means no record is held here, not that nothing happened."
+  },
+  "related": [
+    {
+      "entity_id": "ent:body:mp-state-employment-guarantee-council",
+      "relation": "administered_by"
+    }
+  ],
+  "created_at": "2026-07-26T23:40:00Z"
+}

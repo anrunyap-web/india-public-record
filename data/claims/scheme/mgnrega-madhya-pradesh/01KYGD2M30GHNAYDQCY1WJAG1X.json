@@ -1,0 +1,27 @@
+{
+  "id": "clm:01KYGD2M30GHNAYDQCY1WJAG1X",
+  "subject": "ent:scheme:mgnrega-madhya-pradesh",
+  "predicate": "scheme_expenditure",
+  "value": {
+    "type": "money",
+    "amount": 51861500000,
+    "currency": "INR",
+    "as_printed": "₹5186.15 crore"
+  },
+  "qualifiers": {
+    "financial_year": "2019-20"
+  },
+  "assertion_type": "recorded_by_authority",
+  "evidence": {
+    "source_id": "src:cag:mp-report-4-2026-mgnrega",
+    "page": 57,
+    "locator": "Chart 4.1 \"Funds released and expenditure incurred\", Total Expenditure series, financial year 2019-20 (printed page 31)"
+  },
+  "status": "unverified",
+  "extraction": {
+    "method": "model_assisted",
+    "model": "claude-opus-5",
+    "extracted_at": "2026-07-26T23:45:00Z"
+  },
+  "created_at": "2026-07-26T23:45:00Z"
+}

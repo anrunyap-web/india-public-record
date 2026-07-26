@@ -1,0 +1,26 @@
+{
+  "id": "clm:01KYGD2M36BP85AW42MRN4WQJ2",
+  "subject": "ent:body:mp-state-employment-guarantee-council",
+  "predicate": "audit_observation",
+  "value": {
+    "type": "string",
+    "text": "₹12.21 crore was paid to the Madhya Pradesh DAY-State Rural Livelihood Mission up to July 2021 from the administrative expenditure component, for Cluster Facilitation Teams, after the Government of India declined the State's proposal in April 2019. Audit recorded payment from that head as irregular.",
+    "lang": "en"
+  },
+  "qualifiers": {
+    "financial_year": "2021-22"
+  },
+  "assertion_type": "recorded_by_authority",
+  "evidence": {
+    "source_id": "src:cag:mp-report-4-2026-mgnrega",
+    "page": 60,
+    "locator": "para 4.3.1 (printed page 34)"
+  },
+  "status": "unverified",
+  "extraction": {
+    "method": "model_assisted",
+    "model": "claude-opus-5",
+    "extracted_at": "2026-07-26T23:45:00Z"
+  },
+  "created_at": "2026-07-26T23:45:00Z"
+}

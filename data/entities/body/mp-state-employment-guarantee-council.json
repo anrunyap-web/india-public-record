@@ -1,0 +1,24 @@
+{
+  "id": "ent:body:mp-state-employment-guarantee-council",
+  "type": "body",
+  "canonical_name": "Madhya Pradesh State Employment Guarantee Council",
+  "name_variants": [
+    "MPSEGC",
+    "State Employment Guarantee Council, Madhya Pradesh",
+    "MP State Employment Guarantee Council, Bhopal"
+  ],
+  "disambiguation": "Council for Madhya Pradesh constituted under section 12 of the National Rural Employment Guarantee Act, 2005.",
+  "inclusion_reason": "statutory_body",
+  "coverage": {
+    "from": "2019-04-01",
+    "to": "2024-03-31",
+    "note": "Holds only audit observations recorded by the Comptroller and Auditor General for 2019-24 in one report. An observation records what an auditor found; it is not a finding of wrongdoing by any individual, and no claim here is about a person. Periods with nothing recorded mean no record is held, not that nothing happened."
+  },
+  "related": [
+    {
+      "entity_id": "ent:scheme:mgnrega-madhya-pradesh",
+      "relation": "administers"
+    }
+  ],
+  "created_at": "2026-07-26T23:40:00Z"
+}
