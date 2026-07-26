@@ -408,6 +408,70 @@ describe("entities", () => {
   });
 });
 
+describe("timeline coherence", () => {
+  // Found the hard way: the seed claims were generated with an invented created_at
+  // twenty minutes in the future, so verifying them recorded a claim verified before
+  // it existed. Every gate passed. An archive whose own timestamps are impossible
+  // undermines the thing it exists to provide.
+  it("rejects a claim verified before it was created", () => {
+    const f = validateArchive(
+      archive(entity(), constituency(), party(), source(), claim({
+        created_at: "2026-07-26T12:00:00Z",
+        verification: { verified_by: "handle:reviewer-a", verified_at: "2026-07-26T11:00:00Z" },
+      })),
+      registries(),
+    );
+    expect(codes(f)).toContain("TIMELINE_INCOHERENT");
+  });
+
+  it("rejects a claim extracted after it was created", () => {
+    const f = validateArchive(
+      archive(entity(), constituency(), party(), source(), claim({
+        created_at: "2026-07-26T12:00:00Z",
+        extraction: { method: "manual", extracted_at: "2026-07-26T13:00:00Z" },
+      })),
+      registries(),
+    );
+    expect(codes(f)).toContain("TIMELINE_INCOHERENT");
+  });
+
+  it("rejects updated_at before created_at", () => {
+    const f = validateArchive(
+      archive(entity(), constituency(), party(), source(), claim({
+        created_at: "2026-07-26T12:00:00Z",
+        updated_at: "2026-07-25T12:00:00Z",
+      })),
+      registries(),
+    );
+    expect(codes(f)).toContain("TIMELINE_INCOHERENT");
+  });
+
+  it("warns on a timestamp in the future", () => {
+    const f = validateArchive(
+      archive(entity(), constituency(), party(), source(), claim({
+        created_at: "2099-01-01T00:00:00Z",
+        extraction: { method: "manual", extracted_at: "2099-01-01T00:00:00Z" },
+        verification: { verified_by: "handle:reviewer-a", verified_at: "2099-01-01T00:00:00Z" },
+      })),
+      registries(),
+    );
+    expect(f.map((x) => x.rule)).toContain("TIMESTAMP_IN_FUTURE");
+  });
+
+  it("accepts a coherent timeline", () => {
+    const f = validateArchive(
+      archive(entity(), constituency(), party(), source(), claim({
+        extraction: { method: "manual", extracted_at: "2026-07-26T09:00:00Z" },
+        created_at: "2026-07-26T09:00:00Z",
+        verification: { verified_by: "handle:reviewer-a", verified_at: "2026-07-26T11:00:00Z" },
+        updated_at: "2026-07-26T11:00:00Z",
+      })),
+      registries(),
+    );
+    expect(codes(f)).toEqual([]);
+  });
+});
+
 describe("path and id agreement", () => {
   it("maps ids to colon-free paths", () => {
     expect(idToPath("ent:person:asha-ramesh", "entity"))

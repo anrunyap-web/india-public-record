@@ -39,7 +39,9 @@ export type RuleCode =
   | "PROHIBITED_VOCABULARY"
   | "PLACEHOLDER_DATA"
   | "COMMENT_IN_DATA"
-  | "PATH_ID_MISMATCH";
+  | "PATH_ID_MISMATCH"
+  | "TIMELINE_INCOHERENT"
+  | "TIMESTAMP_IN_FUTURE";
 
 export interface Finding {
   file: string;
@@ -404,6 +406,38 @@ export function validateArchive(records: LoadedRecord[], reg: Registries): Findi
           "TARGET_TYPE_MISMATCH",
           `${c.predicate} targets a ${p.target_type} but ${c.value.entity_id} is a ${target.data.type}`,
         );
+      }
+    }
+
+    // Timeline coherence. A record cannot be verified before it was created, or
+    // extracted after it. Caught nothing until the seed claims were generated with an
+    // invented created_at twenty minutes in the future, and every other gate passed.
+    const t = (v: unknown) => (typeof v === "string" ? Date.parse(v) : NaN);
+    const created = t(c.created_at);
+    const order: Array<[string, number, string, number]> = [
+      ["extraction.extracted_at", t(c.extraction?.extracted_at), "created_at", created],
+      ["created_at", created, "verification.verified_at", t(c.verification?.verified_at)],
+      ["created_at", created, "updated_at", t(c.updated_at)],
+    ];
+    for (const [earlierName, earlier, laterName, later] of order) {
+      if (Number.isFinite(earlier) && Number.isFinite(later) && earlier > later) {
+        add(
+          r,
+          "TIMELINE_INCOHERENT",
+          `${earlierName} (${new Date(earlier).toISOString()}) is after ` +
+            `${laterName} (${new Date(later).toISOString()})`,
+        );
+      }
+    }
+    const FUTURE_TOLERANCE_MS = 60 * 60 * 1000; // an hour, for clock skew between machines
+    for (const [name, value] of [
+      ["created_at", created],
+      ["updated_at", t(c.updated_at)],
+      ["extraction.extracted_at", t(c.extraction?.extracted_at)],
+      ["verification.verified_at", t(c.verification?.verified_at)],
+    ] as Array<[string, number]>) {
+      if (Number.isFinite(value) && value > Date.now() + FUTURE_TOLERANCE_MS) {
+        add(r, "TIMESTAMP_IN_FUTURE", `${name} is ${new Date(value).toISOString()}`, "warn");
       }
     }
 
