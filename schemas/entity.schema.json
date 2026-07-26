@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "entity.schema.json",
+  "title": "Entity",
+  "description": "A thing claims can be made about. Persons are included only in their public capacity as an office holder or candidate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "canonical_name", "inclusion_reason", "coverage", "created_at"],
+  "properties": {
+    "$comment": {
+      "type": "string",
+      "description": "Commentary on a fixture. Permitted in tests/fixtures only; validate.ts rejects this key anywhere under /data."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^ent:(person|party|ministry|office|scheme|project|constituency|house|body):[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "person",
+        "party",
+        "ministry",
+        "office",
+        "scheme",
+        "project",
+        "constituency",
+        "house",
+        "body"
+      ]
+    },
+    "canonical_name": { "type": "string", "minLength": 2, "maxLength": 200 },
+    "name_variants": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 200 },
+      "description": "Spellings encountered in sources. Used for entity resolution and search, not display."
+    },
+    "names_local": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "maxLength": 200 },
+      "propertyNames": { "pattern": "^[a-z]{2}$" },
+      "description": "Keyed by ISO 639-1 code, e.g. { \"hi\": \"...\" }"
+    },
+    "disambiguation": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Short neutral phrase distinguishing same-named entities, e.g. 'MLA, Bihar, 2005-2015'"
+    },
+    "external_ids": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "e.g. { \"wikidata\": \"Q...\", \"sansad_member\": \"...\", \"eci_candidate\": \"...\" }"
+    },
+    "inclusion_reason": {
+      "type": "string",
+      "enum": [
+        "held_public_office",
+        "contested_election",
+        "government_scheme",
+        "government_project",
+        "registered_political_party",
+        "constitutional_body",
+        "administrative_unit"
+      ],
+      "description": "Records which published inclusion rule brought this entity in. Entities without a matching rule do not belong in the dataset — so this is required, not optional: it is the mechanical form of 'not a dossier service'."
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "note"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "format": "date",
+          "description": "Earliest date for which verified claims exist for this entity"
+        },
+        "to": { "type": "string", "format": "date" },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to", "reason"],
+            "properties": {
+              "from": { "type": "string", "format": "date" },
+              "to": { "type": "string", "format": "date" },
+              "reason": { "type": "string", "maxLength": 300 }
+            }
+          }
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Plain-language statement of what is and is not covered. Rendered on the entity page."
+        }
+      }
+    },
+    "related": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["entity_id", "relation"],
+        "properties": {
+          "entity_id": { "type": "string", "pattern": "^ent:" },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "administers",
+              "administered_by",
+              "part_of",
+              "contains",
+              "predecessor_of",
+              "successor_of",
+              "represents",
+              "represented_by"
+            ]
+          }
+        }
+      },
+      "description": "Structural relations only. Personal relationships are out of scope."
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

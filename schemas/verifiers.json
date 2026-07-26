@@ -1,0 +1,12 @@
+{
+  "$comment": "The allowlist of people who may verify a claim. This file is what makes rule 3 — 'a model is never a verifier' — mechanically enforceable. claim.verification.verified_by and second_check_by must both appear here. The original spec's gate (fail if verified_by equals extraction.run_id) could never fire in practice, because a handle and a run id never collide by accident. Adding a handle here is a deliberate, reviewable act: it grants a human the authority to move a claim to 'verified'. Never add an entry for a model, a job, a bot, or a role.",
+
+  "verifiers": [
+    {
+      "handle": "handle:PLACEHOLDER",
+      "name": "PLACEHOLDER — replace before the first verified claim",
+      "added_at": "2026-07-26T00:00:00Z",
+      "note": "validate.ts rejects any handle containing 'placeholder', so this file cannot be left as-is once real data exists."
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+# Decisions
+
+Every place this repo diverges from the specification as originally supplied, and why.
+The pristine originals are outside the repo in `../files/`. `CLAUDE.md` is unchanged —
+none of the nine rules were touched. `SPEC.md` has been edited in place where it
+contradicted itself; each such edit is listed below.
+
+---
+
+## 1. Money is stored in rupees, not paise
+
+`claim.schema.json` said `amount` was "in the smallest whole unit of the currency" —
+paise for INR. `claims.example.json` stored `42000000` against `as_printed:
+"4,20,00,000"`, which is 4.2 crore **rupees**. The schema and its own example disagreed
+by a factor of 100.
+
+Resolved in favour of the example. Indian filings print rupees; storing paise would
+append a constant `00` to every figure, and a missing or extra zero-pair is a silent
+100× error that no schema can catch. `amount` is now `type: integer` (it was `number`,
+so `42000000.50` used to validate), and `as_printed` is now **required** on money values
+— without it the magnitude cross-check has no anchor.
+
+`validate.ts` parses `as_printed` (Indian digit grouping, `Cr`/`crore`, `Lakh`/`lakh`)
+and fails the build when it disagrees with `amount` by more than a rounding step.
+
+**Reversible only while no real money data exists.** Say so now if you want paise.
+
+## 2. `$comment` is allowed in schemas, banned under `/data`
+
+All three schemas set `additionalProperties: false` and none declared `$comment`, but
+all three supplied example files carry one. In JSON Schema 2020-12 `$comment` is a
+schema keyword, not an instance exemption, so **every supplied example failed its own
+schema**. Since "prove bad data is rejected" is build step 1, these would have been the
+first fixtures loaded, and they'd have failed for the wrong reason.
+
+`$comment` is now an optional string on all five record schemas, and `validate.ts`
+rejects the key anywhere under `/data`. Fixtures may be annotated; published records
+may not.
+
+## 3. Tier stays `[1,2,3]`; the spec's tier-4 sentence is gone
+
+SPEC §3 said "Tier 4 and below are not permitted as the *sole* evidence", implying tier 4
+records exist as corroboration. `source.schema.json` had `enum: [1,2,3]`, so they could
+not exist at all. The schema's own description — "Nothing below tier 3 may be the sole
+evidence" — also excluded tier 3, the tier it was defining.
+
+Resolved in favour of the schema, because the pipeline agrees with it: discover ingests
+only from "a fixed allowlist of official repositories" and does no open web crawling, so
+a tier-4 source could never enter. Both descriptions rewritten;
+`corroborating_evidence` is for cross-checking one tier 1–3 source against another.
+
+## 4. `--pending` changed from `#7A7268` to `#635C54`
+
+§9 requires 4.5:1 for text. §7 made `--paper-sunk` the table-stripe colour, and
+`--pending` is exactly the colour that lands on it — unverified and superseded rows.
+
+| | on `--paper` | on `--paper-sunk` |
+|---|---|---|
+| `#7A7268` as supplied | 4.55:1 | **4.17:1 — fails** |
+| `#635C54` | 6.31:1 | 5.78:1 |
+
+`/entity/<id>/history/` would have failed axe-core on the first run. Every other token
+pair had headroom: `--ink-soft` 7.25:1, `--flagged` 6.20:1, `--stamp` 10.1:1, all on
+sunk paper.
+
+`--rule` (`#D8D5CC`) sits at 1.41:1 against paper, below the 3:1 §9 asks for interface
+elements. Left as supplied and treated as decorative, since table hairlines are not
+required to identify a control — but flagged here so it stays a decision.
+
+## 5. "Nine values" was eight
+
+`--paper`, `--paper-sunk`, `--ink`, `--ink-soft`, `--rule`, `--stamp`, `--pending`,
+`--flagged`. No ninth token added: links render as `--ink` with an underline, which is
+what a public register does, and a dedicated link colour would collide with `--stamp`'s
+"this was checked" meaning. Comment corrected to eight.
+
+## 6. Paths drop the id prefix
+
+Ids contain colons; NTFS cannot store them in a filename. `ent:person:modi-narendra`
+becomes `/data/entities/person/modi-narendra.json`. The type directory carries what the
+prefix did, so the id is reconstructible, and `validate.ts` asserts path↔id agreement in
+both directions. Source ids become `/data/sources/<year>/<publisher>/<doc>.json` for the
+same reason.
+
+## 7. `verifiers.json` replaces the run-id check
+
+SPEC §5 failed a PR when `verification.verified_by` equalled `extraction.run_id`. Those
+are shaped `handle:reviewer-a` and `run-2026-07-26-eci-01`; they never collide, so the
+gate always passed and rule 3 went unenforced. Replaced with an allowlist of human
+handles that `verified_by` and `second_check_by` must be drawn from. Adding a handle is
+a reviewable act that grants a person the authority to publish.
+
+## 8. Four gates added that the spec's rules implied but never enforced
+
+`predicates.json` declared `requires_qualifiers`, `applies_to`, and `assertion_type` on
+nearly every predicate, and §5 checked none of them. Consequences: `case_stage` was
+optional in practice on `declared_case` despite rule 6 turning on it;
+`audit_observation` could attach to a person despite its own note forbidding it; a
+`declared_*` predicate could ship as `recorded_by_authority`, inverting rule 5.
+
+Also added `target_type` to the three `entity_ref` predicates (`held_office` → office,
+`party_affiliation` → party, `constituency_represented` → constituency), which nothing
+in the supplied files constrained — `party_affiliation → ent:scheme:foo` validated.
+
+## 9. Placeholder data is now rejected
+
+The sample source's `sha256` is 64 zeros: it matches `^[a-f0-9]{64}$` and passes the "a
+source lacks `sha256`" gate. Its URLs are `example.org`. Both example files say "never
+publish sample data" and nothing enforced it. `prohibited.json` now denylists all-zero
+and empty-string hashes, `example.*` hosts, and ids containing `sample` / `placeholder` /
+`test`.
+
+## 10. `inclusion_reason` is required on entities
+
+Both `CLAUDE.md` and the field's own description say entities without a matching
+inclusion rule "do not belong in the dataset", but it was optional. It is the mechanical
+form of "not a dossier service", so it is now in `required`.
+
+## 11. Prohibited vocabulary is scoped to generated strings
+
+Rule 6 bans the words in "generated content, label, or alt text". It does not reach
+verbatim source material — an affidavit that says "accused" says "accused", and
+paraphrasing a source to dodge a wordlist would be a worse failure than the word.
+`prohibited.json` lists checked paths (`coverage.note`, `disambiguation`,
+`what_was_wrong`, predicate labels) and exempt ones (`value.text`, `evidence.quote`,
+`source.title`). "criminal" is contextual: banned as an adjective for a person, allowed
+in "criminal case", "criminal proceedings" and similar.
+
+---
+
+## Two schemas written from scratch
+
+Neither was supplied, and both are required by the spec.
+
+- **`correction.schema.json`** — `/data/corrections/` is in the layout, `/corrections/`
+  is a route, and `claim.correction_id` references it. Includes `no_change_needed` as a
+  logged outcome: a report that turned out to be mistaken is still part of the record.
+- **`coverage.schema.json`** — **needs your sign-off.** The spec requires
+  `/data/coverage/<dataset-id>.json` and a `/coverage/` matrix but never defines what a
+  dataset *is*, or how a claim belongs to one. Proposed: a dataset is a named
+  (publisher × doc_type × predicate-set) stream, so membership is derivable and the real
+  year range can be computed and checked against the declared one. If you had a
+  different grouping in mind, this is the file to change.
+
+## Still open
+
+- `derived_by_project` is unusable — no predicate declares it, so `derivation` can never
+  legally appear. Not a bug, but the claim schema carries machinery nothing can reach.
+- Related: `attendance_days` says "let the interface compute" the percentage, while §7
+  says nothing renders without a provenance stamp. A computed percentage has two source
+  claims and no single page to point at. Unresolved; decide before building charts.
+- No licence chosen for the data or the code.
+- `/data/` bulk CSV has no column layout or data dictionary yet.

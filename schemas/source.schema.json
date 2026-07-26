@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "source.schema.json",
+  "title": "Source",
+  "description": "An archived document that claims can be drawn from. A source is unusable as evidence until it has been hashed and archived.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "publisher",
+    "tier",
+    "doc_type",
+    "original_url",
+    "archive_url",
+    "storage_url",
+    "sha256",
+    "retrieved_at"
+  ],
+  "properties": {
+    "$comment": {
+      "type": "string",
+      "description": "Commentary on a fixture. Permitted in tests/fixtures only; validate.ts rejects this key anywhere under /data."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^src:[a-z0-9]+(-[a-z0-9]+)*:[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "src:<publisher-slug>:<document-slug>"
+    },
+    "title": { "type": "string", "minLength": 3, "maxLength": 300 },
+    "title_local": {
+      "type": "string",
+      "maxLength": 300,
+      "description": "Title in the original script, if not English"
+    },
+    "language": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z]{2}$" },
+      "minItems": 1
+    },
+    "publisher": { "type": "string", "minLength": 2 },
+    "tier": {
+      "type": "integer",
+      "enum": [1, 2, 3],
+      "description": "1 = official primary record (gazette, affidavit, judgment, audit report). 2 = official secondary (press release, ministry dashboard export). 3 = institutional research with published methodology. There is no tier 4: the discover step ingests only from the official allowlist, so material weaker than tier 3 is not recordable in this archive at all. corroborating_evidence is for cross-checking one tier 1-3 source against another.",
+      "$comment": "Supersedes the original spec wording 'Tier 4 and below are not permitted as the sole evidence', which implied tier 4 records could exist, and the schema's 'Nothing below tier 3', which excluded tier 3 itself."
+    },
+    "doc_type": {
+      "type": "string",
+      "enum": [
+        "affidavit",
+        "gazette_notification",
+        "parliamentary_debate",
+        "parliamentary_question",
+        "committee_report",
+        "audit_report",
+        "budget_document",
+        "annual_report",
+        "court_judgment",
+        "election_result",
+        "official_dataset",
+        "press_release",
+        "research_publication"
+      ]
+    },
+    "published_on": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the document itself bears. Omit if the document is undated."
+    },
+    "period_covered": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from"],
+      "properties": {
+        "from": { "type": "string", "format": "date" },
+        "to": { "type": "string", "format": "date" }
+      }
+    },
+    "original_url": { "type": "string", "format": "uri" },
+    "archive_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Independent third-party archive copy, normally web.archive.org. This is the durability guarantee; storage_url is only a convenience copy."
+    },
+    "storage_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Your own object-store copy. Never a path inside this repository. Currently a GitHub release asset in the blobs repo; migrating hosts is a rewrite of this one field per record."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Of the retrieved bytes. validate.ts additionally rejects the all-zero placeholder, which matches this pattern but proves nothing."
+    },
+    "byte_size": { "type": "integer", "minimum": 1 },
+    "page_count": { "type": "integer", "minimum": 1 },
+    "retrieved_at": { "type": "string", "format": "date-time" },
+    "retrieved_by": { "type": "string", "description": "Handle of the person or the automated job id" },
+    "text_layer": {
+      "type": "string",
+      "enum": ["native", "ocr", "none"],
+      "description": "Claims extracted from an ocr layer must record ocr in claim.extraction.method"
+    },
+    "ocr_engine": { "type": "string" },
+    "access_note": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "How this was obtained, e.g. RTI response number, portal path, request date"
+    },
+    "rights_note": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Copyright or reuse status. Government works and third-party works are treated differently when quoting."
+    },
+    "superseded_by": {
+      "type": "string",
+      "pattern": "^src:",
+      "description": "Set when a corrected or revised edition of this document is published"
+    }
+  }
+}

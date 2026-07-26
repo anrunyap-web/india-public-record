@@ -1,0 +1,92 @@
+{
+  "$comment": "NEW FILE. CLAUDE.md rules 6 and 9 exist only as English sentences, but SPEC section 5 asks CI to enforce both mechanically. This file is the machine-readable form. Changing it is an editorial act, not a refactor.",
+
+  "field_names": {
+    "$comment": "Rule 9 — no personal data beyond public role. These are matched against every OBJECT KEY appearing anywhere under /data, at any depth, case-insensitively, after stripping non-alphanumerics. A match fails the build outright. Note that Form 26 affidavits do print a candidate's father's name, spouse's assets, and address: the rule is that we do not extract them, so the field must never exist in the first place.",
+    "patterns": [
+      "address", "homeaddress", "residentialaddress", "permanentaddress", "postaladdress",
+      "phone", "phonenumber", "mobile", "mobilenumber", "telephone", "contactnumber",
+      "email", "emailaddress",
+      "spouse", "spousename", "spouseassets", "spouseincome",
+      "father", "fathername", "mother", "mothername",
+      "son", "sons", "daughter", "daughters", "wife", "husband",
+      "family", "familymembers", "familydetails", "dependent", "dependents", "dependant", "dependants",
+      "relative", "relatives", "relativeassets", "hufassets",
+      "health", "medical", "medicalhistory", "disability", "illness",
+      "caste", "subcaste", "category", "community",
+      "religion", "faith",
+      "dob", "dateofbirth", "birthdate",
+      "pan", "aadhaar", "aadhar", "voterid", "passportnumber", "bankaccount", "accountnumber"
+    ],
+    "note": "'category' is included because Indian official forms use it as a euphemism for caste category (SC/ST/OBC/General). If a legitimate non-caste use for that key ever appears, rename the key rather than weakening this list."
+  },
+
+  "vocabulary": {
+    "$comment": "Rule 6 — neutral vocabulary only. SCOPE MATTERS: rule 6 bans these in 'generated content, label, or alt text'. It does NOT reach verbatim source material, because an affidavit that says 'accused' says 'accused' and paraphrasing a source to dodge a wordlist would be a worse failure than the word itself. So the check runs on generated and editorial strings and skips fields that hold source text verbatim.",
+    "words": [
+      "corrupt", "corruption",
+      "tainted",
+      "accused",
+      "scandal",
+      "failed", "failure",
+      "successful", "success"
+    ],
+    "contextual": {
+      "criminal": {
+        "note": "Rule 6 bans 'criminal' only as an adjective for a person. Legal usage is unavoidable and correct.",
+        "allowed_phrases": [
+          "criminal case", "criminal cases", "criminal proceedings", "criminal court",
+          "criminal procedure", "criminal law", "criminal appeal", "criminal revision",
+          "criminal miscellaneous"
+        ]
+      }
+    },
+    "checked_fields": {
+      "$comment": "Dotted paths, checked against generated and editorial strings under /data.",
+      "paths": [
+        "entity.disambiguation",
+        "entity.coverage.note",
+        "entity.coverage.gaps[].reason",
+        "correction.what_was_wrong",
+        "correction.action_note",
+        "coverage.label",
+        "coverage.description",
+        "coverage.coverage.note",
+        "coverage.coverage.gaps[].reason"
+      ]
+    },
+    "exempt_fields": {
+      "$comment": "Verbatim source material or structural pointers into a document. Never rewritten to satisfy a wordlist.",
+      "paths": [
+        "claim.value.text",
+        "claim.evidence.quote",
+        "claim.evidence.locator",
+        "claim.dispute.summary",
+        "claim.dispute.resolution",
+        "claim.verification.note",
+        "source.title",
+        "source.title_local",
+        "source.access_note",
+        "source.rights_note",
+        "entity.canonical_name",
+        "entity.name_variants[]",
+        "entity.names_local"
+      ]
+    },
+    "also_checked": {
+      "$comment": "Outside /data: every label rendered by the interface. predicates.json labels are checked because rule 6 says to use them verbatim, so a bad label would propagate everywhere. Site source files are checked once /site exists.",
+      "globs": ["schemas/predicates.json", "site/src/**/*.astro", "site/src/**/*.ts"]
+    }
+  },
+
+  "placeholder_data": {
+    "$comment": "Both supplied example files say 'never publish sample data', but nothing stopped it: the sample source's sha256 is 64 zeros, which satisfies the ^[a-f0-9]{64}$ pattern and passes the 'a source lacks sha256' gate. These patterns fail the build if they appear anywhere under /data.",
+    "sha256_denylist": [
+      "0000000000000000000000000000000000000000000000000000000000000000",
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "sha256_denylist_note": "The second is the SHA-256 of the empty string — a real hash of nothing at all.",
+    "url_host_denylist": ["example.org", "example.com", "example.net", "localhost", "archive.example.org"],
+    "id_substring_denylist": ["sample", "placeholder", "example", "test", "dummy", "todo", "xxx"]
+  }
+}

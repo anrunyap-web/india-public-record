@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "correction.schema.json",
+  "title": "Correction",
+  "description": "An entry in the public correction log: what was wrong, who reported it, what was done, and which claim replaced it. Append-only — a correction is never edited to hide that it happened, and never deleted. NEW FILE: the spec requires /data/corrections and a /corrections/ route, and claim.correction_id references it, but no schema was supplied.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "reported_at", "what_was_wrong", "action", "affected_claims", "created_at"],
+  "properties": {
+    "$comment": {
+      "type": "string",
+      "description": "Commentary on a fixture. Permitted in tests/fixtures only; validate.ts rejects this key anywhere under /data."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^cor:[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "cor:<slug>, e.g. cor:2026-07-affidavit-assets-misread"
+    },
+    "reported_at": { "type": "string", "format": "date-time" },
+    "reported_by": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "Free text, because reporters are often external and not project handles. Use 'anonymous' rather than omitting. Never record a reporter's email, phone, or address here — rule 9 applies to this file too."
+    },
+    "what_was_wrong": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Plain statement of the error, in neutral terms. Rendered verbatim on /corrections/."
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "claim_superseded",
+        "claim_withdrawn",
+        "source_replaced",
+        "entity_corrected",
+        "no_change_needed"
+      ],
+      "description": "What was actually done. no_change_needed is a legitimate outcome and is still logged — a report that turned out to be mistaken is part of the public record."
+    },
+    "action_note": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Why this action, especially when the action was no_change_needed."
+    },
+    "affected_claims": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^clm:" },
+      "minItems": 1,
+      "description": "Every claim the report touched, whether or not it changed."
+    },
+    "replacement_claims": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^clm:" },
+      "description": "Required when action is claim_superseded. validate.ts checks that each of these actually supersedes one of affected_claims."
+    },
+    "affected_sources": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^src:" }
+    },
+    "affected_entities": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^ent:" }
+    },
+    "resolved_at": { "type": "string", "format": "date-time" },
+    "resolved_by": {
+      "type": "string",
+      "pattern": "^handle:[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Must appear in schemas/verifiers.json."
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "action": { "const": "claim_superseded" } }, "required": ["action"] },
+      "then": { "required": ["replacement_claims"] }
+    },
+    {
+      "if": { "properties": { "action": { "const": "no_change_needed" } }, "required": ["action"] },
+      "then": { "required": ["action_note"] }
+    }
+  ]
+}

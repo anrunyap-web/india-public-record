@@ -1,0 +1,284 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claim.schema.json",
+  "title": "Claim",
+  "description": "One atomic fact about one entity, traced to one place in one archived document. Immutable once written: to change a value, write a new claim that supersedes this one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "subject",
+    "predicate",
+    "value",
+    "assertion_type",
+    "evidence",
+    "status",
+    "extraction",
+    "created_at"
+  ],
+  "properties": {
+    "$comment": {
+      "type": "string",
+      "description": "Commentary on a fixture. Permitted in tests/fixtures only; validate.ts rejects this key anywhere under /data."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^clm:[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "clm: followed by a ULID, so ids sort by creation time"
+    },
+    "subject": { "type": "string", "pattern": "^ent:" },
+    "predicate": {
+      "type": "string",
+      "description": "Must exist in schemas/predicates.json. value.type must match the predicate's declared type."
+    },
+    "value": {
+      "type": "object",
+      "required": ["type"],
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "required": ["type", "amount", "currency", "as_printed"],
+          "properties": {
+            "type": { "const": "money" },
+            "amount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "A whole number in the currency's MAJOR unit — rupees for INR, not paise. Indian filings print rupees, so storing minor units would append a constant '00' to every figure and make a missing or extra zero-pair a silent 100x error. validate.ts cross-checks this against as_printed."
+            },
+            "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+            "as_printed": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "The figure exactly as it appears, e.g. '4,20,00,000' or 'Rs. 4.2 Cr'. Required: it is the anchor for the magnitude cross-check, and the string the interface renders."
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["type", "number"],
+          "properties": {
+            "type": { "enum": ["integer", "decimal"] },
+            "number": { "type": "number" },
+            "unit": { "type": "string", "maxLength": 40 }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["type", "date"],
+          "properties": {
+            "type": { "const": "date" },
+            "date": { "type": "string", "format": "date" },
+            "precision": { "enum": ["day", "month", "year"], "default": "day" }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["type", "from"],
+          "properties": {
+            "type": { "const": "date_range" },
+            "from": { "type": "string", "format": "date" },
+            "to": { "type": "string", "format": "date" },
+            "ongoing": { "type": "boolean", "default": false }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["type", "code"],
+          "properties": {
+            "type": { "const": "enum" },
+            "code": { "type": "string", "description": "Must be one of the predicate's allowed codes in predicates.json" }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["type", "text"],
+          "properties": {
+            "type": { "const": "string" },
+            "text": { "type": "string", "maxLength": 500 },
+            "lang": { "type": "string", "pattern": "^[a-z]{2}$" }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["type", "entity_id"],
+          "properties": {
+            "type": { "const": "entity_ref" },
+            "entity_id": { "type": "string", "pattern": "^ent:" }
+          }
+        }
+      ]
+    },
+    "qualifiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Context that scopes the claim. A value without its as_of date is usually meaningless. predicates.json declares which of these each predicate requires; validate.ts enforces that.",
+      "properties": {
+        "as_of": { "type": "string", "format": "date" },
+        "financial_year": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}$" },
+        "house": { "type": "string", "pattern": "^ent:house:" },
+        "term": { "type": "string", "maxLength": 60 },
+        "constituency": { "type": "string", "pattern": "^ent:constituency:" },
+        "ministry": { "type": "string", "pattern": "^ent:ministry:" },
+        "session": { "type": "string", "maxLength": 60 },
+        "case_stage": {
+          "type": "string",
+          "enum": [
+            "fir_registered",
+            "chargesheet_filed",
+            "cognizance_taken",
+            "charges_framed",
+            "trial_ongoing",
+            "convicted",
+            "acquitted",
+            "discharged",
+            "stayed",
+            "withdrawn",
+            "appeal_pending",
+            "stage_not_stated"
+          ],
+          "description": "Required on any claim about a legal matter. A declared case is not a conviction and must never be rendered as one."
+        }
+      }
+    },
+    "valid_from": { "type": "string", "format": "date" },
+    "valid_to": { "type": "string", "format": "date" },
+    "assertion_type": {
+      "type": "string",
+      "enum": ["declared_by_subject", "recorded_by_authority", "derived_by_project"],
+      "description": "Who is making this assertion. Must be surfaced in the interface, not just stored. Must equal the predicate's declared assertion_type."
+    },
+    "derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Required when assertion_type is derived_by_project. Nothing may be derived without a published method.",
+      "required": ["method", "inputs"],
+      "properties": {
+        "method": { "type": "string", "maxLength": 500 },
+        "inputs": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^clm:" },
+          "minItems": 1
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "page", "locator"],
+      "properties": {
+        "source_id": { "type": "string", "pattern": "^src:" },
+        "page": { "type": "integer", "minimum": 1 },
+        "locator": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Where on the page, e.g. 'Part A, table 2, row 4' or 'para 3.17'"
+        },
+        "quote": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Short verbatim phrase for pinpointing only. Never a paragraph. Prefer omitting it for copyrighted third-party sources."
+        },
+        "snippet_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Cropped image of the exact region, in object storage. Strongest form of proof."
+        }
+      }
+    },
+    "corroborating_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "page"],
+        "properties": {
+          "source_id": { "type": "string", "pattern": "^src:" },
+          "page": { "type": "integer", "minimum": 1 },
+          "locator": { "type": "string", "maxLength": 200 }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "unverified", "verified", "disputed", "superseded", "withdrawn"],
+      "description": "Only verified claims render on the site. Machine extraction may never produce anything above unverified. draft = incomplete, not yet ready for review. withdrawn = retracted without a replacement, as distinct from superseded, which always has one.",
+      "$comment": "Nothing but a human editing a file may write 'verified'. See rule 3."
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "extracted_at"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["manual", "structured_import", "ocr", "ocr_model_assisted", "model_assisted"]
+        },
+        "model": { "type": "string", "description": "Model identifier, when a model was involved" },
+        "run_id": { "type": "string" },
+        "extracted_at": { "type": "string", "format": "date-time" },
+        "extractor_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Advisory only. Never used to auto-promote a claim."
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified_by", "verified_at"],
+      "properties": {
+        "verified_by": {
+          "type": "string",
+          "description": "Handle of a person. Must appear in schemas/verifiers.json. Never a job id, a run id, or a model id.",
+          "pattern": "^handle:[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "verified_at": { "type": "string", "format": "date-time" },
+        "second_check_by": {
+          "type": "string",
+          "pattern": "^handle:[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "note": { "type": "string", "maxLength": 500 }
+      }
+    },
+    "dispute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raised_at", "summary"],
+      "properties": {
+        "raised_at": { "type": "string", "format": "date-time" },
+        "raised_by": { "type": "string", "maxLength": 120 },
+        "summary": { "type": "string", "maxLength": 1000 },
+        "resolution": { "type": "string", "maxLength": 1000 },
+        "resolved_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "supersedes": { "type": "string", "pattern": "^clm:" },
+    "superseded_by": { "type": "string", "pattern": "^clm:" },
+    "correction_id": { "type": "string", "pattern": "^cor:" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "verified" } }, "required": ["status"] },
+      "then": { "required": ["verification"] }
+    },
+    {
+      "if": { "properties": { "status": { "const": "superseded" } }, "required": ["status"] },
+      "then": { "required": ["superseded_by"] }
+    },
+    {
+      "if": { "properties": { "status": { "const": "disputed" } }, "required": ["status"] },
+      "then": { "required": ["dispute"] }
+    },
+    {
+      "if": {
+        "properties": { "assertion_type": { "const": "derived_by_project" } },
+        "required": ["assertion_type"]
+      },
+      "then": { "required": ["derivation"] }
+    }
+  ]
+}

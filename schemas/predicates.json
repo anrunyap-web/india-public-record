@@ -1,0 +1,213 @@
+{
+  "$comment": "The controlled vocabulary. A claim using a predicate absent from this file fails CI. Adding a predicate is an editorial decision: it needs a neutral label, a declared value type, and a stated assertion_type. Labels here are rendered verbatim in the interface — do not paraphrase them in components. CHANGE FROM THE SUPPLIED FILE: entity_ref predicates now declare target_type, so validate.ts can reject e.g. party_affiliation pointing at a scheme. Nothing else was altered; every label is verbatim.",
+
+  "declared_total_assets": {
+    "label": "Total assets declared",
+    "value_type": "money",
+    "applies_to": ["person"],
+    "assertion_type": "declared_by_subject",
+    "requires_qualifiers": ["as_of"],
+    "note": "Self-sworn figure from an election affidavit. It is a declaration, not an audited valuation, and must never be labelled as net worth."
+  },
+  "declared_total_liabilities": {
+    "label": "Total liabilities declared",
+    "value_type": "money",
+    "applies_to": ["person"],
+    "assertion_type": "declared_by_subject",
+    "requires_qualifiers": ["as_of"]
+  },
+  "declared_movable_assets": {
+    "label": "Movable assets declared",
+    "value_type": "money",
+    "applies_to": ["person"],
+    "assertion_type": "declared_by_subject",
+    "requires_qualifiers": ["as_of"]
+  },
+  "declared_immovable_assets": {
+    "label": "Immovable assets declared",
+    "value_type": "money",
+    "applies_to": ["person"],
+    "assertion_type": "declared_by_subject",
+    "requires_qualifiers": ["as_of"]
+  },
+  "declared_income": {
+    "label": "Income declared",
+    "value_type": "money",
+    "applies_to": ["person"],
+    "assertion_type": "declared_by_subject",
+    "requires_qualifiers": ["financial_year"]
+  },
+  "declared_education": {
+    "label": "Education declared",
+    "value_type": "string",
+    "applies_to": ["person"],
+    "assertion_type": "declared_by_subject",
+    "requires_qualifiers": ["as_of"],
+    "note": "Record the qualification exactly as stated, including institution and year if given. Do not normalise into a ranked category."
+  },
+  "declared_profession": {
+    "label": "Profession declared",
+    "value_type": "string",
+    "applies_to": ["person"],
+    "assertion_type": "declared_by_subject",
+    "requires_qualifiers": ["as_of"]
+  },
+  "declared_case": {
+    "label": "Case declared in affidavit",
+    "value_type": "string",
+    "applies_to": ["person"],
+    "assertion_type": "declared_by_subject",
+    "requires_qualifiers": ["as_of", "case_stage"],
+    "note": "One claim per case. Record the statute and section as printed. case_stage is mandatory. Never aggregate these into a count that is displayed without the stage breakdown."
+  },
+  "declared_case_count": {
+    "label": "Number of cases declared",
+    "value_type": "integer",
+    "applies_to": ["person"],
+    "assertion_type": "declared_by_subject",
+    "requires_qualifiers": ["as_of"]
+  },
+
+  "held_office": {
+    "label": "Office held",
+    "value_type": "entity_ref",
+    "target_type": "office",
+    "applies_to": ["person"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Use valid_from and valid_to for the term."
+  },
+  "party_affiliation": {
+    "label": "Party affiliation",
+    "value_type": "entity_ref",
+    "target_type": "party",
+    "applies_to": ["person"],
+    "assertion_type": "recorded_by_authority"
+  },
+  "constituency_represented": {
+    "label": "Constituency represented",
+    "value_type": "entity_ref",
+    "target_type": "constituency",
+    "applies_to": ["person"],
+    "assertion_type": "recorded_by_authority"
+  },
+  "election_result_votes": {
+    "label": "Votes received",
+    "value_type": "integer",
+    "applies_to": ["person"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["constituency", "as_of"]
+  },
+  "election_outcome": {
+    "label": "Election outcome",
+    "value_type": "enum",
+    "codes": ["elected", "not_elected", "withdrawn", "disqualified", "result_countermanded"],
+    "applies_to": ["person"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["constituency", "as_of"]
+  },
+
+  "questions_asked_count": {
+    "label": "Questions asked",
+    "value_type": "integer",
+    "applies_to": ["person"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["session", "house"],
+    "note": "A count, not a measure of performance. Never combine with other counts into a score."
+  },
+  "debates_participated_count": {
+    "label": "Debates participated in",
+    "value_type": "integer",
+    "applies_to": ["person"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["session", "house"]
+  },
+  "attendance_days": {
+    "label": "Days attended",
+    "value_type": "integer",
+    "applies_to": ["person"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["session", "house"],
+    "note": "Store days attended and days sat as separate claims. Do not store a percentage — let the interface compute and label it."
+  },
+  "sitting_days": {
+    "label": "Days the house sat",
+    "value_type": "integer",
+    "applies_to": ["house"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["session"]
+  },
+  "bill_introduced": {
+    "label": "Bill introduced",
+    "value_type": "string",
+    "applies_to": ["person", "ministry"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["session"]
+  },
+
+  "scheme_allocation": {
+    "label": "Budget allocation",
+    "value_type": "money",
+    "applies_to": ["scheme", "ministry", "project"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["financial_year"],
+    "note": "Record which stage the figure is from in the locator: budget estimate, revised estimate, or actual."
+  },
+  "scheme_expenditure": {
+    "label": "Expenditure reported",
+    "value_type": "money",
+    "applies_to": ["scheme", "ministry", "project"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["financial_year"]
+  },
+  "scheme_beneficiaries": {
+    "label": "Beneficiaries reported",
+    "value_type": "integer",
+    "applies_to": ["scheme"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["financial_year"]
+  },
+  "project_status": {
+    "label": "Status reported",
+    "value_type": "enum",
+    "codes": ["announced", "approved", "tendered", "under_implementation", "completed", "suspended", "cancelled", "status_not_stated"],
+    "applies_to": ["project"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"]
+  },
+  "project_cost_estimate": {
+    "label": "Estimated cost",
+    "value_type": "money",
+    "applies_to": ["project"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"]
+  },
+  "project_completion_target": {
+    "label": "Target completion date",
+    "value_type": "date",
+    "applies_to": ["project"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"]
+  },
+  "audit_observation": {
+    "label": "Audit observation recorded",
+    "value_type": "string",
+    "applies_to": ["ministry", "scheme", "project", "body"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["financial_year"],
+    "note": "Summarise the auditor's finding in neutral terms and cite the paragraph. An observation is not a finding of wrongdoing by any individual, and must never be attached to a person entity."
+  },
+
+  "$forbidden": {
+    "$comment": "These are not predicates. They are named here so reviewers can point at the list. Any pull request introducing one of these is rejected on principle, not on implementation.",
+    "examples": [
+      "performance_score",
+      "integrity_rating",
+      "development_index",
+      "promise_fulfilment_pct",
+      "corruption_level",
+      "effectiveness_grade",
+      "public_sentiment"
+    ]
+  }
+}

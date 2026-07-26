@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "coverage.schema.json",
+  "title": "Dataset coverage",
+  "description": "PROPOSED — NEEDS SIGN-OFF. The spec requires /data/coverage/<dataset-id>.json and a /coverage/ matrix route, but never defines what a dataset is or how claims belong to one. This schema proposes: a dataset is a named (publisher x doc_type x predicate-set) stream of records, and a claim belongs to it when its source publisher and doc_type match and its predicate is in the list. That makes membership derivable rather than hand-maintained, so a dataset's real year range can be computed from the data and checked against the declared one. Rule 8 — show the gaps — is the whole point: this file states what is NOT held, so an empty stretch on an entity page reads as 'no record' rather than 'nothing happened'.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "label", "publisher", "doc_types", "predicates", "coverage", "created_at"],
+  "properties": {
+    "$comment": {
+      "type": "string",
+      "description": "Commentary on a fixture. Permitted in tests/fixtures only; validate.ts rejects this key anywhere under /data."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^ds:[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "ds:<slug>, e.g. ds:eci-affidavits"
+    },
+    "label": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Rendered verbatim as the row heading in the /coverage/ matrix."
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "What this dataset is and where it comes from. Neutral, factual."
+    },
+    "publisher": { "type": "string", "minLength": 2 },
+    "doc_types": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "affidavit",
+          "gazette_notification",
+          "parliamentary_debate",
+          "parliamentary_question",
+          "committee_report",
+          "audit_report",
+          "budget_document",
+          "annual_report",
+          "court_judgment",
+          "election_result",
+          "official_dataset",
+          "press_release",
+          "research_publication"
+        ]
+      }
+    },
+    "predicates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Predicate names this dataset supplies. Each must exist in predicates.json."
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "note"],
+      "properties": {
+        "from": { "type": "string", "format": "date" },
+        "to": {
+          "type": "string",
+          "format": "date",
+          "description": "Omit if the dataset is current and still being added to."
+        },
+        "ongoing": { "type": "boolean", "default": false },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to", "reason"],
+            "properties": {
+              "from": { "type": "string", "format": "date" },
+              "to": { "type": "string", "format": "date" },
+              "reason": {
+                "type": "string",
+                "maxLength": 300,
+                "description": "Why nothing is held. 'Not yet extracted' and 'does not exist' are different facts and must be worded differently."
+              }
+            }
+          }
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Plain-language statement of what is and is not covered. Rendered on /coverage/ and on every entity page drawing on this dataset."
+        }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}
