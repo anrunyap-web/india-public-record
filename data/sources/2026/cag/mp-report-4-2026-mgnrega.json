@@ -1,0 +1,23 @@
+{
+  "id": "src:cag:mp-report-4-2026-mgnrega",
+  "title": "Report of the Comptroller and Auditor General of India on Implementation of Mahatma Gandhi National Rural Employment Guarantee Act in Madhya Pradesh",
+  "language": ["en"],
+  "publisher": "Comptroller and Auditor General of India",
+  "tier": 1,
+  "doc_type": "audit_report",
+  "period_covered": {
+    "from": "2019-04-01",
+    "to": "2024-03-31"
+  },
+  "original_url": "https://cag.gov.in/webroot/uploads/download_audit_report/2026/MP-Report-No.-04-of-2026---MGNREGA--English-06a61c636798ce0.32200448.pdf",
+  "archive_url": "https://web.archive.org/web/20260726230542/https://cag.gov.in/webroot/uploads/download_audit_report/2026/MP-Report-No.-04-of-2026---MGNREGA--English-06a61c636798ce0.32200448.pdf",
+  "storage_url": "https://github.com/anrunyap-web/india-public-record-blobs/releases/download/cag-2026/cag-mp-report-4-2026-mgnrega.pdf",
+  "sha256": "76470ece9bd4722d5f57f16bc1cdf4aed0ab2b0ba4054108c36464a8a6b52c84",
+  "byte_size": 8822683,
+  "page_count": 164,
+  "retrieved_at": "2026-07-26T23:05:31Z",
+  "retrieved_by": "handle:anrun",
+  "text_layer": "native",
+  "access_note": "Downloaded from the CAG audit report listing at cag.gov.in/en/audit-report, entry 'Report No. 4 of 2026, Government of Madhya Pradesh'. Internet Archive capture confirmed the origin returned HTTP 200, so the snapshot is the document rather than a block page.",
+  "rights_note": "Work of the Comptroller and Auditor General of India, submitted to the Governor of Madhya Pradesh under Article 151 of the Constitution and laid before the State Legislature. Reproduction of the record is permitted; verbatim quotation is kept minimal regardless."
+}
