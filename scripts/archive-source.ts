@@ -83,6 +83,25 @@ interface SpnResult {
   timestamp: string;
 }
 
+/**
+ * Save Page Now reports status: "success" when it captured *something* — including a
+ * WAF error page. Capturing https://affidavit.eci.gov.in/ returns success with
+ * http_status 403: a real archive URL, pointing at a block page, that would have
+ * satisfied "a source lacks archive_url" and quietly become evidence for nothing.
+ * A capture is only usable if IA actually saw the document.
+ */
+function assertUsableCapture(httpStatus: number | undefined, url: string): void {
+  if (httpStatus === undefined) {
+    throw new Error(`Internet Archive did not report an HTTP status for ${url}; refusing it`);
+  }
+  if (httpStatus !== 200) {
+    throw new Error(
+      `Internet Archive captured ${url} but the origin returned HTTP ${httpStatus}. ` +
+        `The snapshot is an error page, not the document. Refusing to record it as archive_url.`,
+    );
+  }
+}
+
 export async function saveToInternetArchive(url: string): Promise<SpnResult> {
   const { access, secret } = credentials();
   const auth = { Authorization: `LOW ${access}:${secret}`, Accept: "application/json" };
@@ -99,19 +118,34 @@ export async function saveToInternetArchive(url: string): Promise<SpnResult> {
   }
   console.log(`  submitted to Internet Archive, job ${submitted.job_id}`);
 
-  // SPN captures take anywhere from seconds to a couple of minutes on slow .gov.in hosts.
-  for (let attempt = 0; attempt < 60; attempt++) {
-    await new Promise((r) => setTimeout(r, 5000));
+  // SPN captures take anywhere from seconds to a couple of minutes on slow .gov.in
+  // hosts. The status endpoint rate-limits and answers 429 in HTML, not JSON, so back
+  // off rather than crashing on an unexpected token.
+  let delay = 6000;
+  for (let attempt = 0; attempt < 40; attempt++) {
+    await new Promise((r) => setTimeout(r, delay));
     const poll = await fetch(`https://web.archive.org/save/status/${submitted.job_id}`, {
       headers: auth,
     });
-    const st = (await poll.json()) as {
-      status?: string;
-      timestamp?: string;
-      original_url?: string;
-      message?: string;
-    };
+
+    if (poll.status === 429) {
+      delay = Math.min(delay * 2, 60000);
+      process.stdout.write("~");
+      continue;
+    }
+
+    const raw = await poll.text();
+    let st: { status?: string; timestamp?: string; original_url?: string; message?: string; http_status?: number };
+    try {
+      st = JSON.parse(raw);
+    } catch {
+      delay = Math.min(delay * 2, 60000);
+      process.stdout.write("?");
+      continue;
+    }
+
     if (st.status === "success" && st.timestamp) {
+      assertUsableCapture(st.http_status, url);
       return {
         archive_url: `https://web.archive.org/web/${st.timestamp}/${st.original_url ?? url}`,
         timestamp: st.timestamp,
@@ -120,7 +154,7 @@ export async function saveToInternetArchive(url: string): Promise<SpnResult> {
     if (st.status === "error") throw new Error(`capture failed: ${st.message ?? "unknown"}`);
     process.stdout.write(".");
   }
-  throw new Error("capture did not complete within five minutes");
+  throw new Error("capture did not complete in time");
 }
 
 // ---------------------------------------------------------------------------
