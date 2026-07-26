@@ -126,6 +126,53 @@ paraphrasing a source to dodge a wordlist would be a worse failure than the word
 `source.title`). "criminal" is contextual: banned as an adjective for a person, allowed
 in "criminal case", "criminal proceedings" and similar.
 
+## 12. The seed source is a CAG audit report, not an ECI affidavit
+
+ECI was the plan. It cannot work: `affidavit.eci.gov.in` and `www.eci.gov.in` return
+403, `affidavitarchive.eci.gov.in` does not resolve, and `old.eci.gov.in` times out.
+
+The Internet Archive is blocked too, which is what settles it. Save Page Now reports
+`status: success` for `affidavit.eci.gov.in` — with `http_status: 403`. It captured the
+block page. That would have produced a real, resolvable `archive_url` satisfying the
+"a source lacks archive_url" gate while pointing at nothing, and every claim citing it
+would have been evidence for a WAF error.
+
+`archive-source.ts` now refuses any capture whose origin status was not 200, and
+`verify-archive.ts` re-checks it weekly through the wayback availability API rather than
+merely confirming the URL resolves. Working around this instead would have meant
+abandoning the durability guarantee, which is the point of the project.
+
+## 13. `evidence.page` is the PDF page; the printed page goes in the locator
+
+They differ, and not by a constant — chapter dividers are unnumbered, so the offset
+shifts through the document. The PDF page is directly actionable against the
+hash-pinned archived copy, which is what a reader checking a claim actually needs. The
+printed page and paragraph number go in `locator`, which is where a citation belongs.
+
+## 14. `statutory_body` added to `inclusion_reason`
+
+The first `body` entity is a State Employment Guarantee Council, constituted under
+section 12 of an Act, not by the Constitution. The supplied enum offered only
+`constitutional_body`, which would have been untrue, and `administrative_unit`, which
+means a geographic unit. Since decision #10 made `inclusion_reason` required, there was
+no honest way to leave it blank.
+
+## 15. The scheme entity is scoped to one State
+
+`ent:scheme:mgnrega-madhya-pradesh`, not `ent:scheme:mgnrega`. Every figure in the
+report is State-level, and `qualifiers` has no field for a State or region — so a claim
+attached to a national entity would have read as a national figure, which would be
+false.
+
+The alternative is adding a `region` qualifier to the claim schema. That is the better
+long-term answer if this ever holds more than one State, and it is a small change. It
+was not made now because one State needs no disambiguation and a speculative qualifier
+is harder to remove than to add. **Worth revisiting before a second State is loaded.**
+
+Fragmenting a national scheme by State is also less costly here than it would be
+elsewhere: the project forbids ranking entities against each other, so the usual reason
+to want them unified does not apply.
+
 ---
 
 ## Two schemas written from scratch
