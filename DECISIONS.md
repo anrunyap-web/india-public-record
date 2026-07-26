@@ -173,6 +173,29 @@ Fragmenting a national scheme by State is also less costly here than it would be
 elsewhere: the project forbids ranking entities against each other, so the usual reason
 to want them unified does not apply.
 
+## 16. Timestamps are read from the clock, and the validator now checks they cohere
+
+The seed claims were first written with `created_at` and `extracted_at` of
+`2026-07-26T23:45:00Z` — a value invented while generating them rather than read from
+the clock, and roughly twenty minutes in the future. Verifying them would have recorded
+ten claims verified at `23:26` that claimed to have been created at `23:45`: verified
+before they existed.
+
+Every gate passed. Nothing in the schema, the referential integrity pass, or the rule
+checks looks at whether a record's own timeline is possible.
+
+Fixed by recovering the true write times from file mtimes and the git commit
+(`23:17:57Z`, `23:18:01Z`, `23:18:56Z`), and by adding two checks: `TIMELINE_INCOHERENT`
+fails the build when `extracted_at` is after `created_at`, or `verified_at` or
+`updated_at` before it; `TIMESTAMP_IN_FUTURE` warns on anything more than an hour ahead
+of the validating machine's clock.
+
+**Known residue.** The ten ULIDs were generated from the same invented time, so the
+timestamp embedded in each id is about 26 minutes later than the record's `created_at`.
+Their relative order is correct, which is what the id is for. They were not regenerated
+because rule 4 forbids deleting a claim file, and the ids are the filenames. Recorded
+here so that anyone decoding a ULID and finding the mismatch knows why.
+
 ---
 
 ## Two schemas written from scratch
