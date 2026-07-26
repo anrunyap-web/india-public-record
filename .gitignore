@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.astro/
+site/dist/
+site/node_modules/
+
+# Source PDFs are never stored in this repo — only their hash, archive URL and
+# object-store URL. See CLAUDE.md, hosting constraints.
+*.pdf
+/tmp/
+/scratch/
+
+# OneDrive / Windows
+Thumbs.db
+desktop.ini
+.DS_Store

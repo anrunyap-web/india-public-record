@@ -1,0 +1,26 @@
+{
+  "name": "india-public-record",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A static, sourced archive of claims about Indian government and politics.",
+  "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "tsx scripts/validate.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "npm run validate && npm run build:site",
+    "build:site": "echo \"no site yet — build order step 4\" && exit 0",
+    "verify-archive": "tsx scripts/verify-archive.ts"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

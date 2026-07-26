@@ -1,0 +1,6 @@
+# The archive is reviewed as diffs, so line endings must not vary by contributor OS.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.woff2 binary
