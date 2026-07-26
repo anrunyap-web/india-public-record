@@ -4,7 +4,7 @@
   "predicate": "audit_observation",
   "value": {
     "type": "string",
-    "text": "Of the liabilities recorded as on 31 March 2024, ₹54.79 crore towards wages, across 4.7 lakh transactions, was attributed to beneficiary accounts not being mapped for payment.",
+    "text": "Of the liabilities recorded as on 31 March 2024, ₹54.79 crore towards wages, across 4.7 lakh transactions, was attributed to the non-mapping of beneficiary accounts with Aadhaar.",
     "lang": "en"
   },
   "qualifiers": {
