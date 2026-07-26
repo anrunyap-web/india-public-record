@@ -16,11 +16,17 @@
     "page": 61,
     "locator": "para 4.4 and footnote 8 (printed page 35)"
   },
-  "status": "unverified",
+  "status": "verified",
   "extraction": {
     "method": "model_assisted",
     "model": "claude-opus-5",
-    "extracted_at": "2026-07-26T23:45:00Z"
+    "extracted_at": "2026-07-26T23:18:56Z"
   },
-  "created_at": "2026-07-26T23:45:00Z"
+  "verification": {
+    "verified_by": "handle:anrun",
+    "verified_at": "2026-07-26T23:26:00Z",
+    "note": "Checked against the rendered page of the archived copy, at the locator given."
+  },
+  "created_at": "2026-07-26T23:18:56Z",
+  "updated_at": "2026-07-26T23:26:00Z"
 }
