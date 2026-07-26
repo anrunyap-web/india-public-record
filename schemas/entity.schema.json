@@ -60,9 +60,11 @@
         "government_project",
         "registered_political_party",
         "constitutional_body",
+        "statutory_body",
         "administrative_unit"
       ],
-      "description": "Records which published inclusion rule brought this entity in. Entities without a matching rule do not belong in the dataset — so this is required, not optional: it is the mechanical form of 'not a dossier service'."
+      "description": "Records which published inclusion rule brought this entity in. Entities without a matching rule do not belong in the dataset — so this is required, not optional: it is the mechanical form of 'not a dossier service'.",
+      "$comment": "statutory_body was added when the first body entity turned out to be a State Employment Guarantee Council, constituted under section 12 of an Act rather than by the Constitution. Recording it as constitutional_body would have been simply untrue, and the enum as supplied had no other honest value for it."
     },
     "coverage": {
       "type": "object",
