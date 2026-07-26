@@ -3,10 +3,10 @@
 
   "verifiers": [
     {
-      "handle": "handle:PLACEHOLDER",
-      "name": "PLACEHOLDER — replace before the first verified claim",
+      "handle": "handle:anrun",
+      "name": "Project maintainer",
       "added_at": "2026-07-26T00:00:00Z",
-      "note": "validate.ts rejects any handle containing 'placeholder', so this file cannot be left as-is once real data exists."
+      "note": "Sole verifier at present. A second handle is needed before second_check_by can be used on any claim."
     }
   ]
 }
