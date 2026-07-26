@@ -4,6 +4,13 @@ dist/
 site/dist/
 site/node_modules/
 
+# Internet Archive S3 keys. Never committed, never logged, never printed.
+.env
+
+# Working copies of fetched documents, pending upload to the blobs repo.
+# Source PDFs never live in this repo — see CLAUDE.md, hosting constraints.
+blobs/
+
 # Source PDFs are never stored in this repo — only their hash, archive URL and
 # object-store URL. See CLAUDE.md, hosting constraints.
 *.pdf

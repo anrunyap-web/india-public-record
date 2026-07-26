@@ -14,6 +14,8 @@
     "test:watch": "vitest",
     "build": "npm run validate && npm run build:site",
     "build:site": "echo \"no site yet — build order step 4\" && exit 0",
+    "archive": "tsx scripts/archive-source.ts",
+    "upload-blob": "tsx scripts/upload-blob.ts",
     "verify-archive": "tsx scripts/verify-archive.ts"
   },
   "devDependencies": {
