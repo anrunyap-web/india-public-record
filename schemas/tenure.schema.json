@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tenure.schema.json",
+  "title": "Tenure",
+  "description": "Who held which office, from when to when. This is the record that lets an indicator chart carry a time-axis annotation. It is deliberately NOT a claim: a claim can be plotted, aggregated, and compared, and a tenure must never be any of those things. Keeping it a separate record type means the chart code physically cannot treat a person's term as a data series. See CLAUDE.md rule 10.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "office", "holder", "from", "evidence", "status", "created_at"],
+  "properties": {
+    "$comment": {
+      "type": "string",
+      "description": "Commentary on a fixture. Permitted in tests/fixtures only; validate.ts rejects this key anywhere under /data."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^ten:[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "ten:<slug>, e.g. ten:pm-india-2014-2019"
+    },
+    "office": {
+      "type": "string",
+      "pattern": "^ent:office:",
+      "description": "The office, not the person. Offices outlive their holders."
+    },
+    "holder": {
+      "type": "string",
+      "pattern": "^ent:person:"
+    },
+    "from": { "type": "string", "format": "date" },
+    "to": {
+      "type": "string",
+      "format": "date",
+      "description": "Omit while the tenure is current. An absent 'to' means ongoing, never unknown."
+    },
+    "ongoing": { "type": "boolean", "default": false },
+    "party_at_time": {
+      "type": "string",
+      "pattern": "^ent:party:",
+      "description": "Recorded because it is a fact about the period. Never used to colour anything: SPEC section 8 forbids categorical colour implying party identity."
+    },
+    "overlaps_permitted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Two tenures for one office normally indicate a data error, so CI rejects them. Set this on both records when an overlap is genuine — an acting appointment during a leave of absence, for instance — and say why in the note."
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Neutral. Records circumstance, never assessment: 'appointed following resignation', not 'took over the struggling ministry'."
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "page", "locator"],
+      "properties": {
+        "source_id": { "type": "string", "pattern": "^src:" },
+        "page": { "type": "integer", "minimum": 1 },
+        "locator": { "type": "string", "maxLength": 200 },
+        "quote": { "type": "string", "maxLength": 200 },
+        "snippet_url": { "type": "string", "format": "uri" }
+      },
+      "description": "A tenure is evidence-backed like anything else. 'Everyone knows who was Prime Minister' is not a source."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "unverified", "verified", "disputed", "superseded", "withdrawn"]
+    },
+    "extraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "extracted_at"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["manual", "structured_import", "ocr", "ocr_model_assisted", "model_assisted"]
+        },
+        "model": { "type": "string" },
+        "run_id": { "type": "string" },
+        "extracted_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verified_by", "verified_at"],
+      "properties": {
+        "verified_by": { "type": "string", "pattern": "^handle:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "verified_at": { "type": "string", "format": "date-time" },
+        "second_check_by": { "type": "string", "pattern": "^handle:[a-z0-9]+(-[a-z0-9]+)*$" },
+        "note": { "type": "string", "maxLength": 500 }
+      }
+    },
+    "superseded_by": { "type": "string", "pattern": "^ten:" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "verified" } }, "required": ["status"] },
+      "then": { "required": ["verification"] }
+    },
+    {
+      "if": { "properties": { "status": { "const": "superseded" } }, "required": ["status"] },
+      "then": { "required": ["superseded_by"] }
+    }
+  ]
+}

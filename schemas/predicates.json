@@ -198,6 +198,127 @@
     "note": "Summarise the auditor's finding in neutral terms and cite the paragraph. An observation is not a finding of wrongdoing by any individual, and must never be attached to a person entity."
   },
 
+  "$comment_indicators": "Development indicators. These attach to a place — country, state or district — never to a person, which is what applies_to enforces. Each is a single measured quantity, published as itself. None of them may be combined with another into a score, index, or grade: see the $forbidden list below, and CLAUDE.md rule 10 on why aggregating any of these by tenure is out of bounds.",
+
+  "gdp_at_constant_prices": {
+    "label": "GDP at constant prices",
+    "value_type": "money",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["financial_year"],
+    "note": "Record the base year in the locator. India revised the base from 2004-05 to 2011-12 in 2015, alongside a methodology change to the MCA-21 database. Figures either side are not comparable, and the dataset's coverage record must carry that as a break."
+  },
+  "gdp_growth_rate": {
+    "label": "GDP growth rate",
+    "value_type": "decimal",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["financial_year"],
+    "note": "Per cent, year on year, as published. Never computed by this project from two GDP claims — a derived figure needs assertion_type derived_by_project and a published method."
+  },
+  "per_capita_income": {
+    "label": "Per capita income",
+    "value_type": "money",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["financial_year"],
+    "note": "Net national income per person as published. State the base year in the locator."
+  },
+  "inflation_rate_cpi": {
+    "label": "Consumer price inflation",
+    "value_type": "decimal",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["financial_year"],
+    "note": "Per cent. The CPI series was reconstituted in 2011-12; earlier figures come from the separate CPI-IW and CPI-AL series and are a different instrument."
+  },
+  "unemployment_rate": {
+    "label": "Unemployment rate",
+    "value_type": "decimal",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Per cent. PLFS replaced the NSS employment and unemployment rounds in 2017-18. The two are not one series, and joining them is a break."
+  },
+  "labour_force_participation_rate": {
+    "label": "Labour force participation rate",
+    "value_type": "decimal",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"]
+  },
+  "population": {
+    "label": "Population",
+    "value_type": "integer",
+    "applies_to": ["country", "state", "district"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Census figures only. The 2021 Census did not take place, so the most recent enumerated figure is 2011. Projections are a different thing and do not belong under this predicate."
+  },
+  "literacy_rate": {
+    "label": "Literacy rate",
+    "value_type": "decimal",
+    "applies_to": ["country", "state", "district"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Per cent, census definition, age seven and above. Stops at 2011 for the same reason as population."
+  },
+  "infant_mortality_rate": {
+    "label": "Infant mortality rate",
+    "value_type": "decimal",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Deaths under one year per 1,000 live births. Say in the locator whether the figure is from the Sample Registration System or a National Family Health Survey round; they are different instruments."
+  },
+  "life_expectancy_at_birth": {
+    "label": "Life expectancy at birth",
+    "value_type": "decimal",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Years. Published for multi-year periods; record the period in the locator."
+  },
+  "households_with_electricity": {
+    "label": "Households with electricity",
+    "value_type": "decimal",
+    "applies_to": ["country", "state", "district"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Per cent of households. A connection is not the same as supply, and the source's definition goes in the locator."
+  },
+  "households_with_sanitation": {
+    "label": "Households with sanitation facility",
+    "value_type": "decimal",
+    "applies_to": ["country", "state", "district"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"]
+  },
+  "installed_power_capacity": {
+    "label": "Installed power generation capacity",
+    "value_type": "decimal",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Megawatts. Capacity is not generation and not consumption."
+  },
+  "national_highway_length": {
+    "label": "National highway length",
+    "value_type": "decimal",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Kilometres. Reclassification of state highways into the national network changes this figure without any road being built; note it in the locator when the source says so."
+  },
+  "school_enrolment_ratio": {
+    "label": "Gross enrolment ratio",
+    "value_type": "decimal",
+    "applies_to": ["country", "state"],
+    "assertion_type": "recorded_by_authority",
+    "requires_qualifiers": ["as_of"],
+    "note": "Per cent. State the level — primary, upper primary, secondary — in the locator. Can exceed 100 because it counts enrolment against the age-appropriate population."
+  },
+
   "$forbidden": {
     "$comment": "These are not predicates. They are named here so reviewers can point at the list. Any pull request introducing one of these is rejected on principle, not on implementation.",
     "examples": [

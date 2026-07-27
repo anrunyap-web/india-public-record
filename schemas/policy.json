@@ -1,0 +1,23 @@
+{
+  "$comment": "NEW FILE. Rule 2 permits unverified figures to render; the editorial policy in CLAUDE.md narrows where. This file is that policy in machine-readable form, so it is enforced by CI rather than remembered by whoever writes the next component. Changing what the public sees is a deliberate edit here, reviewable in a diff — never a special case inside a template.",
+
+  "renderable_status": {
+    "$comment": "Statuses that may appear on the public site at all. draft is incomplete work; withdrawn is retracted without a replacement. Neither belongs in front of a reader. superseded appears only on the history route, which is why it is listed separately.",
+    "default": ["verified", "unverified", "disputed"],
+    "history_route_only": ["superseded"],
+    "never": ["draft", "withdrawn"]
+  },
+
+  "by_subject_type": {
+    "$comment": "Overrides keyed by the subject entity's type. A machine-extracted financial or criminal figure attached to a living person is the one case where being wrong causes harm a label does not undo, and it carries real defamation exposure in India. Aggregate indicators about a place carry no such risk: a GDP series with three unchecked years is still useful, and the label is honest.",
+    "person": {
+      "renderable_status": ["verified"],
+      "reason": "Claims about a named individual render only when a person has checked them against the page."
+    }
+  },
+
+  "status_label_required_adjacent": {
+    "$comment": "Rule 2: a reader who never opens a provenance panel must still know what they are looking at. These statuses must have their name rendered as text next to the value itself — not only inside the expandable panel, and never by colour alone.",
+    "statuses": ["unverified", "disputed", "superseded"]
+  }
+}

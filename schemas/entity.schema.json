@@ -13,7 +13,7 @@
     },
     "id": {
       "type": "string",
-      "pattern": "^ent:(person|party|ministry|office|scheme|project|constituency|house|body):[a-z0-9]+(-[a-z0-9]+)*$"
+      "pattern": "^ent:(person|party|ministry|office|scheme|project|constituency|house|body|country|state|district):[a-z0-9]+(-[a-z0-9]+)*$"
     },
     "type": {
       "type": "string",
@@ -26,8 +26,12 @@
         "project",
         "constituency",
         "house",
-        "body"
-      ]
+        "body",
+        "country",
+        "state",
+        "district"
+      ],
+      "$comment": "country, state and district were added when the archive took on indicator series. An indicator belongs to a place, and the supplied enum had no place types — only constituency, which is an electoral unit and the wrong grain for GDP or literacy."
     },
     "canonical_name": { "type": "string", "minLength": 2, "maxLength": 200 },
     "name_variants": {

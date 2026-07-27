@@ -85,6 +85,42 @@
             }
           }
         },
+        "breaks": {
+          "type": "array",
+          "description": "Methodology discontinuities. A break is not a gap: data exists on both sides, but the two sides are not one series. Drawing a line straight across one is a false statement, so SPEC section 8 requires the line to stop and the break to be labelled. India's twenty-year window contains several — the 2015 GDP base-year revision, the 2017 replacement of the NSS employment rounds by PLFS, the 2011-12 reconstitution of the CPI.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["at", "kind", "description"],
+            "properties": {
+              "at": {
+                "type": "string",
+                "format": "date",
+                "description": "The first date on the later side of the break."
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "base_year_revision",
+                  "methodology_change",
+                  "instrument_change",
+                  "definition_change",
+                  "boundary_change"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "What changed, in neutral terms, and what it means for comparison across the break."
+              },
+              "comparable_across": {
+                "type": "boolean",
+                "default": false,
+                "description": "True only where the publisher has issued a back-cast series on the new basis. Defaults to false, because the safe assumption is that two sides of a break cannot be compared."
+              }
+            }
+          }
+        },
         "note": {
           "type": "string",
           "maxLength": 500,
