@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { validateArchive, idToPath, pathToId, parseAsPrinted } from "../scripts/validate.js";
 import type { Finding } from "../scripts/validate.js";
-import { archive, claim, entity, constituency, party, source, registries, ulid } from "./helpers.js";
+import {
+  archive, claim, entity, constituency, party, source, registries, ulid,
+  country, office, tenure, indicator,
+} from "./helpers.js";
 
 /** Rule codes present in the findings, for readable assertions. */
 const codes = (f: Finding[]) => f.filter((x) => x.severity === "error").map((x) => x.rule);
@@ -404,6 +407,108 @@ describe("entities", () => {
     const e = entity();
     delete (e.data as Record<string, unknown>).coverage;
     const f = validateArchive(archive(e, constituency(), party(), source(), claim()), registries());
+    expect(codes(f)).toContain("SCHEMA");
+  });
+});
+
+describe("rule 2 — unverified renders, but not about a person", () => {
+  it("accepts an unverified indicator about a place", () => {
+    // The change the whole rewrite turns on: a GDP series with unchecked years is
+    // publishable, because the label is honest and the figure is still useful.
+    const f = validateArchive(archive(country(), source(), indicator()), registries());
+    expect(codes(f)).toEqual([]);
+  });
+
+  it("rejects an unverified claim about a person", () => {
+    // A machine-extracted figure attached to a living person is the one case where
+    // being wrong causes harm a label does not undo.
+    const f = validateArchive(
+      archive(entity(), constituency(), party(), source(), claim({ status: "unverified" })),
+      registries(),
+    );
+    expect(codes(f)).toContain("STATUS_NOT_RENDERABLE");
+  });
+
+  it("rejects a disputed claim about a person", () => {
+    const f = validateArchive(
+      archive(entity(), constituency(), party(), source(), claim({
+        status: "disputed",
+        dispute: { raised_at: "2026-07-26T09:00:00Z", summary: "Two passes disagreed." },
+      })),
+      registries(),
+    );
+    expect(codes(f)).toContain("STATUS_NOT_RENDERABLE");
+  });
+
+  it("accepts a verified claim about a person", () => {
+    const f = validateArchive(
+      archive(entity(), constituency(), party(), source(), claim()),
+      registries(),
+    );
+    expect(codes(f)).toEqual([]);
+  });
+
+  it("leaves draft and withdrawn alone — they never render for anyone", () => {
+    const f = validateArchive(
+      archive(entity(), constituency(), party(), source(), claim({ status: "draft" })),
+      registries(),
+    );
+    expect(codes(f)).not.toContain("STATUS_NOT_RENDERABLE");
+  });
+});
+
+describe("rule 10 — tenure is annotation, not analysis", () => {
+  it("accepts a well-formed, sourced tenure", () => {
+    const f = validateArchive(
+      archive(entity(), office(), source(), tenure()),
+      registries(),
+    );
+    expect(codes(f)).toEqual([]);
+  });
+
+  it("rejects a tenure whose office does not exist", () => {
+    const f = validateArchive(
+      archive(entity(), source(), tenure()),
+      registries(),
+    );
+    expect(codes(f)).toContain("REF_MISSING");
+  });
+
+  it("rejects a tenure whose holder does not exist", () => {
+    const f = validateArchive(
+      archive(office(), source(), tenure()),
+      registries(),
+    );
+    expect(codes(f)).toContain("REF_MISSING");
+  });
+
+  it("rejects two overlapping tenures for one office", () => {
+    // Normally a data error. One office, one holder at a time.
+    const f = validateArchive(
+      archive(entity(), office(), source(),
+        tenure({ id: "ten:pm-a", from: "2009-05-22", to: "2014-05-26" }),
+        tenure({ id: "ten:pm-b", from: "2013-01-01", to: "2019-05-30" })),
+      registries(),
+    );
+    expect(codes(f)).toContain("TENURE_OVERLAP");
+  });
+
+  it("permits a declared overlap when both records opt in", () => {
+    const f = validateArchive(
+      archive(entity(), office(), source(),
+        tenure({ id: "ten:pm-a", from: "2009-05-22", to: "2014-05-26", overlaps_permitted: true,
+          note: "Acting appointment during a leave of absence." }),
+        tenure({ id: "ten:pm-b", from: "2013-01-01", to: "2019-05-30", overlaps_permitted: true,
+          note: "Acting appointment during a leave of absence." })),
+      registries(),
+    );
+    expect(codes(f)).toEqual([]);
+  });
+
+  it("requires a tenure to cite a source, like anything else", () => {
+    const t = tenure();
+    delete (t.data as Record<string, unknown>).evidence;
+    const f = validateArchive(archive(entity(), office(), source(), t), registries());
     expect(codes(f)).toContain("SCHEMA");
   });
 });

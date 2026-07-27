@@ -19,7 +19,7 @@ import addFormats from "ajv-formats";
 // Types
 // ---------------------------------------------------------------------------
 
-export type Kind = "claim" | "entity" | "source" | "correction" | "coverage";
+export type Kind = "claim" | "entity" | "source" | "correction" | "coverage" | "tenure";
 
 export type RuleCode =
   | "SCHEMA"
@@ -41,7 +41,9 @@ export type RuleCode =
   | "COMMENT_IN_DATA"
   | "PATH_ID_MISMATCH"
   | "TIMELINE_INCOHERENT"
-  | "TIMESTAMP_IN_FUTURE";
+  | "TIMESTAMP_IN_FUTURE"
+  | "STATUS_NOT_RENDERABLE"
+  | "TENURE_OVERLAP";
 
 export interface Finding {
   file: string;
@@ -60,6 +62,7 @@ export interface Registries {
   predicates: Record<string, any>;
   verifiers: Set<string>;
   prohibited: Record<string, any>;
+  policy: Record<string, any>;
 }
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
@@ -75,6 +78,7 @@ const SCHEMA_FILE: Record<Kind, string> = {
   source: "source.schema.json",
   correction: "correction.schema.json",
   coverage: "coverage.schema.json",
+  tenure: "tenure.schema.json",
 };
 
 let validators: Record<Kind, (d: unknown) => boolean> | null = null;
@@ -116,6 +120,8 @@ export function idToPath(
       return `data/corrections/${parts[1]}.json`;
     case "coverage":
       return `data/coverage/${parts[1]}.json`;
+    case "tenure":
+      return `data/tenures/${parts[1]}.json`;
   }
 }
 
@@ -132,6 +138,8 @@ export function pathToId(path: string, kind: Kind): string {
       return `cor:${p[2]}`;
     case "coverage":
       return `ds:${p[2]}`;
+    case "tenure":
+      return `ten:${p[2]}`;
   }
 }
 
@@ -354,6 +362,32 @@ export function validateArchive(records: LoadedRecord[], reg: Registries): Findi
       }
     }
 
+    /*
+     * Rule 2 plus the editorial policy: unverified figures render, except about a named
+     * individual. A GDP series with unchecked years is useful and the label is honest;
+     * a machine-extracted financial or criminal figure attached to a living person is
+     * the one case where being wrong causes harm a label does not undo.
+     *
+     * Only fires for statuses that would actually reach a reader. draft and withdrawn
+     * never render for anyone, so a person claim sitting in either is left alone.
+     */
+    const policy = reg.policy ?? {};
+    const subjectForPolicy = entities.get(c.subject);
+    if (subjectForPolicy) {
+      const wouldRender: string[] = policy.renderable_status?.default ?? [];
+      const allowed: string[] | undefined =
+        policy.by_subject_type?.[subjectForPolicy.data.type]?.renderable_status;
+      if (allowed && wouldRender.includes(c.status) && !allowed.includes(c.status)) {
+        add(
+          r,
+          "STATUS_NOT_RENDERABLE",
+          `status "${c.status}" would render, but schemas/policy.json permits only ` +
+            `${allowed.join(", ")} for a ${subjectForPolicy.data.type} subject. ` +
+            `Verify it, or change the policy deliberately.`,
+        );
+      }
+    }
+
     // predicate-driven rules
     const p = reg.predicates[c.predicate];
     if (!p || c.predicate.startsWith("$")) {
@@ -465,6 +499,59 @@ export function validateArchive(records: LoadedRecord[], reg: Registries): Findi
     }
   }
 
+  // --- tenures -------------------------------------------------------------
+  const tenures = records.filter((r) => r.kind === "tenure");
+  for (const r of tenures) {
+    const t = r.data;
+    if (t.office && !entities.has(t.office)) {
+      add(r, "REF_MISSING", `office -> ${t.office} does not exist`);
+    }
+    if (t.holder && !entities.has(t.holder)) {
+      add(r, "REF_MISSING", `holder -> ${t.holder} does not exist`);
+    }
+    if (t.party_at_time && !entities.has(t.party_at_time)) {
+      add(r, "REF_MISSING", `party_at_time -> ${t.party_at_time} does not exist`);
+    }
+    if (t.evidence?.source_id && !sources.has(t.evidence.source_id)) {
+      add(r, "REF_MISSING", `evidence.source_id -> ${t.evidence.source_id} does not exist`);
+    }
+    for (const field of ["verified_by", "second_check_by"] as const) {
+      const handle = t.verification?.[field];
+      if (handle && !reg.verifiers.has(handle)) {
+        add(r, "VERIFIER_NOT_ALLOWLISTED", `${field} "${handle}" is not in verifiers.json`);
+      }
+    }
+    if (t.to && t.from && Date.parse(t.from) > Date.parse(t.to)) {
+      add(r, "TIMELINE_INCOHERENT", `tenure runs from ${t.from} to ${t.to}`);
+    }
+  }
+
+  /*
+   * One office, one holder at a time. An overlap is normally a data error — two records
+   * for the same span means one of them is wrong, and an indicator chart annotated with
+   * both would show a period with two names against it. Genuine overlaps exist (an
+   * acting appointment during a leave of absence), so both records may opt in.
+   */
+  for (let i = 0; i < tenures.length; i++) {
+    for (let j = i + 1; j < tenures.length; j++) {
+      const a = tenures[i]!, b = tenures[j]!;
+      if (a.data.office !== b.data.office) continue;
+      const aFrom = Date.parse(a.data.from);
+      const bFrom = Date.parse(b.data.from);
+      const aTo = a.data.to ? Date.parse(a.data.to) : Number.POSITIVE_INFINITY;
+      const bTo = b.data.to ? Date.parse(b.data.to) : Number.POSITIVE_INFINITY;
+      if (aFrom < bTo && bFrom < aTo) {
+        if (a.data.overlaps_permitted && b.data.overlaps_permitted) continue;
+        add(
+          a,
+          "TENURE_OVERLAP",
+          `overlaps ${b.data.id} for ${a.data.office}. If genuine, set overlaps_permitted ` +
+            `on both records and say why in the note.`,
+        );
+      }
+    }
+  }
+
   // --- rule 4: the version chain must terminate ---------------------------
   findings.push(...supersedeCycles(records, claims));
 
@@ -556,6 +643,7 @@ const DIR_KIND: Record<string, Kind> = {
   sources: "source",
   corrections: "correction",
   coverage: "coverage",
+  tenures: "tenure",
 };
 
 export function loadArchive(root = ROOT): LoadedRecord[] {
@@ -592,6 +680,7 @@ export function loadRegistries(root = ROOT): Registries {
         .filter((h: string) => !h.toLowerCase().includes("placeholder")),
     ),
     prohibited: read("prohibited.json"),
+    policy: read("policy.json"),
   };
 }
 

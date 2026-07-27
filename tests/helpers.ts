@@ -114,15 +114,87 @@ export function claim(over: Record<string, unknown> = {}) {
   };
 }
 
+export function country(over: Record<string, unknown> = {}) {
+  return {
+    kind: "entity" as const,
+    path: "data/entities/country/india.json",
+    data: {
+      id: "ent:country:india",
+      type: "country",
+      canonical_name: "India",
+      inclusion_reason: "administrative_unit",
+      coverage: { from: "2006-04-01", note: "Indicator series from 2006 onward." },
+      created_at: "2026-07-26T09:20:00Z",
+      ...over,
+    },
+  };
+}
+
+export function office(over: Record<string, unknown> = {}) {
+  return {
+    kind: "entity" as const,
+    path: "data/entities/office/prime-minister-of-india.json",
+    data: {
+      id: "ent:office:prime-minister-of-india",
+      type: "office",
+      canonical_name: "Prime Minister of India",
+      inclusion_reason: "constitutional_body",
+      coverage: { from: "2006-04-01", note: "Tenures recorded from 2006 onward." },
+      created_at: "2026-07-26T09:20:00Z",
+      ...over,
+    },
+  };
+}
+
+/** A tenure that passes every check. */
+export function tenure(over: Record<string, unknown> = {}) {
+  const data = {
+    id: "ten:pm-india-2009-2014",
+    office: "ent:office:prime-minister-of-india",
+    holder: "ent:person:asha-ramesh",
+    from: "2009-05-22",
+    to: "2014-05-26",
+    evidence: {
+      source_id: "src:eci:kolar-2024-form26",
+      page: 3,
+      locator: "Gazette notification, part II",
+    },
+    status: "verified",
+    verification: { verified_by: "handle:reviewer-a", verified_at: "2026-07-26T11:02:00Z" },
+    created_at: "2026-07-26T09:31:00Z",
+    ...over,
+  };
+  return {
+    kind: "tenure" as const,
+    path: `data/tenures/${(data.id as string).slice(4)}.json`,
+    data,
+  };
+}
+
 /** Registries with a single real verifier, so the allowlist check has something to pass. */
 export function registries(over: Partial<Registries> = {}): Registries {
   return {
     predicates: PREDICATES,
     verifiers: new Set(["handle:reviewer-a", "handle:reviewer-b"]),
     prohibited: PROHIBITED,
+    policy: POLICY,
     ...over,
   } as Registries;
 }
+
+const POLICY: any = {
+  renderable_status: {
+    default: ["verified", "unverified", "disputed"],
+    history_route_only: ["superseded"],
+    never: ["draft", "withdrawn"],
+  },
+  by_subject_type: {
+    person: { renderable_status: ["verified"] },
+  },
+  status_label_required_adjacent: {
+    statuses: ["unverified", "disputed", "superseded"],
+  },
+};
 
 export function archive(...records: LoadedRecord[]): LoadedRecord[] {
   return records;
@@ -173,7 +245,40 @@ const PREDICATES: Record<string, any> = {
     assertion_type: "recorded_by_authority",
     requires_qualifiers: ["session"],
   },
+  gdp_growth_rate: {
+    label: "GDP growth rate",
+    value_type: "decimal",
+    applies_to: ["country", "state"],
+    assertion_type: "recorded_by_authority",
+    requires_qualifiers: ["financial_year"],
+  },
 };
+
+/** An indicator claim about a place. Unverified by default — that now renders. */
+export function indicator(over: Record<string, unknown> = {}) {
+  const data = {
+    id: `clm:${ulid("KA")}`,
+    subject: "ent:country:india",
+    predicate: "gdp_growth_rate",
+    value: { type: "decimal", number: 7.2, unit: "per cent" },
+    qualifiers: { financial_year: "2016-17" },
+    assertion_type: "recorded_by_authority",
+    evidence: {
+      source_id: "src:eci:kolar-2024-form26",
+      page: 12,
+      locator: "Table 1, row 4",
+    },
+    status: "unverified",
+    extraction: { method: "model_assisted", extracted_at: "2026-07-26T09:31:00Z" },
+    created_at: "2026-07-26T09:31:00Z",
+    ...over,
+  };
+  return {
+    kind: "claim" as const,
+    path: `data/claims/country/india/${(data.id as string).slice(4)}.json`,
+    data,
+  };
+}
 
 const PROHIBITED: any = {
   field_names: {
