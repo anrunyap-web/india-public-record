@@ -234,6 +234,80 @@ Measured after the fixes, every foreground/background pair in both themes clears
 4.5:1 target, worst case 5.15:1 (`--pending` on a dark striped row). The page body does
 not scroll sideways; only the table does, inside its own container.
 
+## 18. The project was rewritten around development indicators over time
+
+The original brief was an archive of sourced claims about government and politics, with
+verified-only publishing and no fixed start year. The goal is now: **India's development
+indicators over a twenty-year window, alongside the office holders of each period, with
+unverified figures shown and labelled.** `CLAUDE.md` and `SPEC.md` were rewritten to
+match, on an explicit decision after the conflicts below were put on the table.
+
+### What changed
+
+| | Was | Now |
+|---|---|---|
+| Publishing | Only `verified` renders | `verified`, `unverified`, `disputed` render; status is a **word beside the value** |
+| Window | "no fixed start year" | 2006 onward, with per-dataset coverage still honest |
+| Entities | no place types | adds `country`, `state`, `district` — an indicator belongs to a place |
+| Office holders | a claim like any other | a separate `tenure` record type |
+| Charts | ranking forbidden | ranking still forbidden; series-over-time is the primary form |
+| Record types | five | six, plus `policy.json` |
+
+### What was deliberately kept
+
+**No composite scores.** The goal is "development based on various metrics" — plural,
+separate. That is not the same as an index, and `development_index` remains in the
+`$forbidden` list by name. Individual indicators are facts; a single development score
+is an invention, and the archive publishes the first kind only.
+
+**No attribution.** Rule 10 is new and does the real work here. Putting a GDP line next
+to "who was Prime Minister" makes a causal claim without stating one — the reader
+supplies the causation, so the page gets the force of an argument with none of the
+accountability. Tenure therefore renders as a neutral band at gridline weight, never a
+series, never a fill, never a segment boundary. **No page, chart, table, or export may
+aggregate an indicator by tenure**: no average growth under a term, no per-term totals,
+no before-and-after. Computing that number is the step that turns an archive into an
+argument.
+
+This is also why `tenure` is a separate record type rather than a claim. A claim can be
+plotted, aggregated, and compared. Keeping tenure outside the claim model means the chart
+code physically cannot treat a term as a data series.
+
+### Unverified about a person is still not published
+
+`schemas/policy.json` permits `unverified` and `disputed` to render by default, and
+narrows to `verified` only where the subject is a **person**. A GDP series with three
+unchecked years is useful and the label is honest. A machine-extracted financial or
+criminal figure attached to a living person is the one case where being wrong causes harm
+a label does not undo, and it carries real defamation exposure in India.
+
+This is a policy, not a law of nature. It is one array in one file, CI enforces it, and
+changing it is a reviewable diff. **It was not asked for — it is my addition, flagged
+here so it can be removed deliberately rather than discovered later.**
+
+### Breaks are now data
+
+The twenty-year window contains at least three methodology discontinuities that would
+silently corrupt a naive series:
+
+- the **2015 GDP base-year revision** (2004-05 → 2011-12, with the MCA-21 methodology
+  change), so figures either side are not comparable
+- the **2017 replacement of the NSS employment rounds by PLFS**, which is a different
+  instrument, not a continuation
+- the **absent 2021 Census**, which leaves every census-derived indicator — population,
+  literacy, household amenities — stopping at 2011, a fifteen-year hole inside a
+  twenty-year window
+
+`coverage.schema.json` gained a `breaks` array, and SPEC §8 requires a series to stop at
+a break rather than draw across it. A line through a base-year revision is a false
+statement, so this is data rather than a footnote.
+
+### New enforcement
+
+`STATUS_NOT_RENDERABLE` for the policy check, `TENURE_OVERLAP` for two holders of one
+office at once, plus referential integrity and timeline checks on tenures. Eleven new
+tests, written first. 56 total, and the existing thirteen records still validate clean.
+
 ---
 
 ## Two schemas written from scratch
